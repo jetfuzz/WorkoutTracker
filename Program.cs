@@ -1,4 +1,9 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using WorkoutTracker.Data;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<WorkoutTrackerContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("WorkoutTrackerContext") ?? throw new InvalidOperationException("Connection string 'WorkoutTrackerContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
