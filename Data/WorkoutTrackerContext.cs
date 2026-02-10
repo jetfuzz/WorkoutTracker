@@ -31,5 +31,6 @@ namespace WorkoutTracker.Data
         public DbSet<Exercise> Exercises { get; set; } = default!;
         public DbSet<Workout> Workouts { get; set; } = default!;
         public DbSet<MuscleGroup> MuscleGroups { get; set; } = default!;
+        public DbSet<WorkoutTracker.Models.Set> Set { get; set; } = default!;
     }
 }
