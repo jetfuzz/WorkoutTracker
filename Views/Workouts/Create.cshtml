@@ -1,38 +1,188 @@
-﻿@model WorkoutTracker.Models.Workout
+﻿@model WorkoutTracker.Models.WorkoutCreateVM
 
 @{
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+@* <h1>Create</h1> *@
 
-<h4>Workout</h4>
+<h4>Create Workout</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="e.g. Leg Day" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="Date" class="control-label"></label>
                 <input asp-for="Date" class="form-control" />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            <hr />
+            <h4>Exercises</h4>
+
+            <div id="exerciseContainer">
             </div>
+
+            <div class="form-group">
+                <button type="button" id="addExerciseBtn" class="btn btn-secondary">+ Add Exercise</button>
+            </div>
+            <hr />
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
+                <button class="btn btn-secondary" asp-action="Index">Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+@* <div>
+    <button class="btn btn-secondary"><a asp-action="Index">Cancel</a></button>
+</div> *@
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        let exerciseIndex = 0;
+        const addExerciseBtn = document.getElementById("addExerciseBtn");
+        let exerciseContainer = document.getElementById("exerciseContainer");
+
+        function createExerciseDiv(container) {
+            let newExerciseDiv = document.createElement("div");
+            newExerciseDiv.id = `exercise.${exerciseIndex}`;
+            newExerciseDiv.classList.add("exerciseDiv", "p-3", "border", "card");
+            newExerciseDiv.innerHTML = `
+                <div class="form-group">
+                    <div class="d-flex gap-2">
+                        <select name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
+                            @foreach (var exercise in Model.ExerciseSelectList)
+                            {
+                                            <option value="@exercise.Value">@exercise.Text</option>
+                            }
+                        </select>
+                        <button type="button" class="btn removeExerciseBtn">X</button>
+                    </div>
+                </div>
+                <div class="form-group setDiv">
+                    <div class="row">
+                        <label class="col control-label small text-center">SET</label>
+                        <label class="col control-label small text-center">LBS</label>
+                        <label class="col control-label small text-center">REPS</label>
+                        <div class="col-auto" style="width: 38px;"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-dark addSetBtn">+ Add Set</button>
+            `;
+            container.appendChild(newExerciseDiv);
+            createSetDiv(newExerciseDiv, exerciseIndex);
+            exerciseIndex++;
+        }
+
+        function createSetDiv(container, exIndex) {
+            //calculate setNumber and setIndex based on current total amount of sets in the exerciseDiv
+            let setIndex = container.querySelectorAll(".setRow").length;
+            let setNumber = setIndex + 1;
+            let setContainer = container.querySelector(".setDiv");
+
+            let newSetDiv = document.createElement("div");
+            newSetDiv.classList.add("setRow");
+            newSetDiv.innerHTML = `
+                <div class="row justify-content-center">
+                    <input class="col form-control form-control-sm text-center"
+                        readonly type="number"
+                        disabled
+                        name="Exercises[${exIndex}].Sets[${setIndex}].SetNumber"
+                        value="${setNumber}" />
+                    <input class="col form-control form-control-sm text-center"
+                        type="number"
+                        required
+                        name="Exercises[${exIndex}].Sets[${setIndex}].Weight"
+                        min="0" />
+                    <input class="col form-control form-control-sm text-center"
+                        type="number"
+                        required
+                        name="Exercises[${exIndex}].Sets[${setIndex}].Repetitions"
+                        min="1"/>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-dark removeSetBtn">X</button>
+                    </div>
+                </div>
+            `;
+            setContainer.appendChild(newSetDiv);
+            setIndex++;
+        }
+
+        function renumberExerciseIndex() {
+            let exerciseDivs = exerciseContainer.querySelectorAll(".exerciseDiv");
+            exerciseDivs.forEach((exerciseDiv, index) => {
+                exerciseDiv.id = `exercise.${index}`;
+                let selectInput = exerciseDiv.querySelector("select");
+                selectInput.name = `Exercises[${index}].ExerciseId`;
+                //renumber set inputs
+                let setRows = exerciseDiv.querySelectorAll(".setRow");
+                setRows.forEach((setRow, setIndex) => {
+                    let setNumberInput = setRow.querySelector("input[name$='.SetNumber']");
+                    setNumberInput.name = `Exercises[${index}].Sets[${setIndex}].SetNumber`;
+                    let weightInput = setRow.querySelector("input[name$='.Weight']");
+                    weightInput.name = `Exercises[${index}].Sets[${setIndex}].Weight`;
+                    let repsInput = setRow.querySelector("input[name$='.Repetitions']");
+                    repsInput.name = `Exercises[${index}].Sets[${setIndex}].Repetitions`;
+                });
+            });
+        }
+
+        function renumberSets() {
+            let exerciseDivs = document.querySelectorAll(".exerciseDiv");
+            exerciseDivs.forEach((exerciseDiv) => {
+                let setRows = exerciseDiv.querySelectorAll(".setRow");
+                setRows.forEach((setRow, index) => {
+                    let setNumberInput = setRow.querySelector("input[name$='.SetNumber']");
+                    console.log(setNumberInput);
+                    setNumberInput.value = index + 1;
+                    //also renumber set index
+                    let exerciseDiv = setRow.closest(".exerciseDiv");
+                    let exIndex = parseInt(exerciseDiv.id.split(".")[1]);
+                    setNumberInput.name = `Exercises[${exIndex}].Sets[${index}].SetNumber`;
+                    let weightInput = setRow.querySelector("input[name$='.Weight']");
+                    weightInput.name = `Exercises[${exIndex}].Sets[${index}].Weight`;
+                    let repsInput = setRow.querySelector("input[name$='.Repetitions']");
+                    repsInput.name = `Exercises[${exIndex}].Sets[${index}].Repetitions`;
+                });
+            });
+        }
+
+        addExerciseBtn.addEventListener("click", () => {
+            createExerciseDiv(exerciseContainer);
+        })
+
+        exerciseContainer.addEventListener("click", (e) => {
+            if (e.target.closest(".removeSetBtn")) {
+                //remove set and renumber sets
+                let setRow = e.target.closest(".setRow");
+                let setContainer = setRow.parentElement;
+                setContainer.removeChild(setRow);
+                renumberSets();
+            } if (e.target.closest(".addSetBtn")) {
+                //add set
+                let exerciseDiv = e.target.closest(".exerciseDiv");
+                let exIndex = parseInt(exerciseDiv.id.split(".")[1]);
+                createSetDiv(exerciseDiv, exIndex);
+            } if (e.target.closest(".removeExerciseBtn")) {
+                //remove exercise and renumber exercises
+                let exerciseDiv = e.target.closest(".exerciseDiv");
+                exerciseContainer.removeChild(exerciseDiv);
+                renumberExerciseIndex();
+            }
+        });
+
+        window.addEventListener("load", (e) => {
+            createExerciseDiv(exerciseContainer);
+        });
+    </script>
 }
