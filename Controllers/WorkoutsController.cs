@@ -70,7 +70,6 @@ namespace WorkoutTracker.Controllers
                 _context.Add(workout);
                 await _context.SaveChangesAsync();
 
-                    //note: add error handling to the view to avoid saving a workout without any exercises
                 //now workoutId exists, loop through the exercises in the view model and create workout exercise objects
                 foreach (var exercise in vm.Exercises)
                 {

@@ -1,48 +1,46 @@
 ﻿@model WorkoutTracker.Models.WorkoutCreateVM
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Workout";
 }
 
-@* <h1>Create</h1> *@
-
-<h4>Create Workout</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" placeholder="e.g. Leg Day" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" />
-                <span asp-validation-for="Date" class="text-danger"></span>
-            </div>
-            <hr />
-            <h4>Exercises</h4>
-
-            <div id="exerciseContainer">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="d-flex mb-3">
+                <h4 class="fw-semibold">Create Workout</h4>
             </div>
 
-            <div class="form-group">
-                <button type="button" id="addExerciseBtn" class="btn btn-secondary">+ Add Exercise</button>
-            </div>
-            <hr />
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-                <button class="btn btn-secondary" asp-action="Index">Cancel</button>
-            </div>
-        </form>
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Leg Day" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Date" class="control-label"></label>
+                    <input asp-for="Date" type="date" class="form-control" />
+                    <span asp-validation-for="Date" class="text-danger"></span>
+                </div>
+                <hr />
+                <h4>Exercises</h4>
+
+                <div id="exerciseContainer">
+                </div>
+
+                <div class="form-group">
+                    <button type="button" id="addExerciseBtn" class="btn btn-primary w-100">+ Add Exercise</button>
+                </div>
+                <hr />
+                <div class="form-group d-flex gap-2">
+                    <input type="submit" value="Create" class="btn btn-primary w-50" />
+                    <input type="button" value="Cancel" class="btn btn-secondary w-50" onclick="location.href='@Url.Action("Index")';" />
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-
-@* <div>
-    <button class="btn btn-secondary"><a asp-action="Index">Cancel</a></button>
-</div> *@
 
 @section Scripts {
     @{
@@ -56,28 +54,30 @@
         function createExerciseDiv(container) {
             let newExerciseDiv = document.createElement("div");
             newExerciseDiv.id = `exercise.${exerciseIndex}`;
-            newExerciseDiv.classList.add("exerciseDiv", "p-3", "border", "card");
+            newExerciseDiv.classList.add("exerciseDiv", "p-3", "mb-4", "card");
             newExerciseDiv.innerHTML = `
                 <div class="form-group">
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 mb-3 align-items-center">
                         <select name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
                             @foreach (var exercise in Model.ExerciseSelectList)
                             {
                                             <option value="@exercise.Value">@exercise.Text</option>
                             }
                         </select>
-                        <button type="button" class="btn removeExerciseBtn">X</button>
+                        <button type="button" class="btn-close removeExerciseBtn"></button>
                     </div>
                 </div>
+
                 <div class="form-group setDiv">
-                    <div class="row">
-                        <label class="col control-label small text-center">SET</label>
-                        <label class="col control-label small text-center">LBS</label>
-                        <label class="col control-label small text-center">REPS</label>
-                        <div class="col-auto" style="width: 38px;"></div>
+                    <div class="row  mb-1 text-secondary"  style="font-size: 0.75rem;">
+                        <label class="col-2 control-label small text-center">SET</label>
+                        <label class="col-4 control-label small text-center">LBS</label>
+                        <label class="col-4 control-label small text-center">REPS</label>
+                        <div class="col-2"></div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-dark addSetBtn">+ Add Set</button>
+                <button type="button" class="btn w-100 addSetBtn">+ Add Set</button>
+
             `;
             container.appendChild(newExerciseDiv);
             createSetDiv(newExerciseDiv, exerciseIndex);
@@ -91,26 +91,32 @@
             let setContainer = container.querySelector(".setDiv");
 
             let newSetDiv = document.createElement("div");
-            newSetDiv.classList.add("setRow");
+            newSetDiv.classList.add("setRow", "mb-2", "align-items-center");
             newSetDiv.innerHTML = `
-                <div class="row justify-content-center">
-                    <input class="col form-control form-control-sm text-center"
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-2">
+                        <input class="form-control form-control-sm text-center  fw-bold"
                         readonly type="number"
                         disabled
                         name="Exercises[${exIndex}].Sets[${setIndex}].SetNumber"
                         value="${setNumber}" />
-                    <input class="col form-control form-control-sm text-center"
+                    </div>
+                    <div class="col-4">
+                        <input class="form-control form-control-sm text-center"
                         type="number"
                         required
                         name="Exercises[${exIndex}].Sets[${setIndex}].Weight"
                         min="0" />
-                    <input class="col form-control form-control-sm text-center"
+                    </div>
+                    <div class="col-4">
+                        <input class="col-4 form-control form-control-sm text-center"
                         type="number"
                         required
                         name="Exercises[${exIndex}].Sets[${setIndex}].Repetitions"
                         min="1"/>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-dark removeSetBtn">X</button>
+                    </div>
+                    <div class="col-2">
+                        <button type="button" class="btn-close removeSetBtn"></button>
                     </div>
                 </div>
             `;
