@@ -34,7 +34,13 @@ namespace WorkoutTracker.Controllers
             }
 
             var workout = await _context.Workouts
+                .Include(w => w.WorkoutExercises) 
+                    .ThenInclude(e => e.Exercise)
+                .Include(w => w.WorkoutExercises)
+                    .ThenInclude(e => e.Sets)
+
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (workout == null)
             {
                 return NotFound();

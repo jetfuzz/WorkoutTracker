@@ -1,30 +1,46 @@
 ﻿@model WorkoutTracker.Models.Workout
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Workout Details";
 }
 
-<h1>Details</h1>
+@* <h1>Details</h1> *@
 
-<div>
-    <h4>Workout</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-    </dl>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="card pt-4 px-4 border-0">
+                <p class="fw-bold mb-0">Username</p>
+                <p class="text-muted small mb-1">@Model.Date.ToString("MMMM dd, yyyy")</p>
+                <p class="fw-bold fs-4 mb-3">@Model.Name</p>
+                @foreach (var workoutExercise in Model.WorkoutExercises)
+                {
+                    <p class="fw-bold fs-5 mb-2">@workoutExercise.Exercise.Name</p>
+                    <div class="setDiv pt-2">
+                        <div class="row text-secondary" style="font-size: 0.75rem;">
+                            <p class="col-3 control-label small">SETS</p>
+                            <p class="col-auto small text-center">WEIGHT & REPS</p>
+                        </div>
+
+                        @foreach (var set in workoutExercise.Sets)
+                        {
+                            <div class="row mb-1">
+                                <p class="col-3 control-label fw-bold ps-4">@set.SetNumber</p>
+                                <p class="col-auto text-center">@set.Weight lbs x @set.Repetitions reps</p>
+                            </div>
+                        }
+                    </div>
+                    <hr />
+                }
+                <div class="d-flex mb-3">   
+                    <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+@* <div class="p-4">
+     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a class="btn btn-secondary w-50" asp-action="Index">Back to List</a>
+</div>  *@
