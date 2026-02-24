@@ -22,7 +22,13 @@ namespace WorkoutTracker.Controllers
         // GET: Workouts
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Workouts.ToListAsync());
+            var context = _context.Workouts
+                .Include(w => w.WorkoutExercises)
+                    .ThenInclude(we => we.Exercise)
+                .Include(w => w.WorkoutExercises)
+                    .ThenInclude(we => we.Sets)
+                .OrderByDescending(w => w.Date);
+            return View(await context.ToListAsync());
         }
 
         // GET: Workouts/Details/5
@@ -35,10 +41,9 @@ namespace WorkoutTracker.Controllers
 
             var workout = await _context.Workouts
                 .Include(w => w.WorkoutExercises) 
-                    .ThenInclude(e => e.Exercise)
+                    .ThenInclude(we => we.Exercise)
                 .Include(w => w.WorkoutExercises)
-                    .ThenInclude(e => e.Sets)
-
+                    .ThenInclude(we => we.Sets)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (workout == null)

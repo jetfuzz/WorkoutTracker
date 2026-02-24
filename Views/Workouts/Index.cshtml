@@ -1,14 +1,48 @@
 ﻿@model IEnumerable<WorkoutTracker.Models.Workout>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Workout History";
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold">Workout History</h3>
+                <a class="btn btn-primary" asp-action="Create">New Workout</a>
+            </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+            @foreach (var workout in Model)
+            {
+                <div class="card px-4 pt-4 m-3 border-0 rounded-3">
+                    <a asp-action="Details" asp-route-id="@workout.Id" class="stretched-link"></a>
+                    <p class="fw-bold mb-0">Username</p>
+                    <p class="text-muted small mb-1">@workout.Date.ToString("MMMM dd, yyyy")</p>
+                    <p class="fw-bold fs-5 mb-1">@workout.Name</p>
+                    <hr class="text-secondary" />
+
+                    @* only display first 3 exercises per result  *@
+                    @if (workout.WorkoutExercises.Count() > 3)
+                    {
+                        @foreach (var workoutExercise in workout.WorkoutExercises.Take(3))
+                        {
+                            <p>@workoutExercise.Sets.Count sets @workoutExercise.Exercise.Name</p>
+                        }
+                        <p class="text-secondary small">see @(workout.WorkoutExercises.Count() - 3) more exercises</p>
+                    } else 
+                    {
+                        @foreach (var workoutExercise in workout.WorkoutExercises)
+                        {
+                            <p>@workoutExercise.Sets.Count sets @workoutExercise.Exercise.Name</p>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* 
 <table class="table">
     <thead>
         <tr>
@@ -18,24 +52,40 @@
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
+            <th>
+                Exercises
+            </th>
+            <th>
+                Sets
+            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var workout in Model) {
+    
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Date)
+                    @workout.Date.ToString("MMMM dd, yyyy")
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Name)
+                    @Html.DisplayFor(modelItem => workout.Name)
             </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
+                @foreach (var we in workout.WorkoutExercises)
+                {
+                    <td>
+                        @(we.Exercise.Name)
+                    </td>
+                    <td>
+                       @we.Sets.Count
+                    </td>
+                }
+             <td>
+                    <a asp-action="Edit" asp-route-id="@workout.Id">Edit</a> 
+                    <a asp-action="Details" asp-route-id="@workout.Id">Details</a> 
+                    <a asp-action="Delete" asp-route-id="@workout.Id">Delete</a>
+            </td> 
         </tr>
 }
     </tbody>
-</table>
+</table> *@

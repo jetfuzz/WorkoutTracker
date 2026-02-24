@@ -97,7 +97,7 @@
                         readonly type="number"
 
                         name="Exercises[${exIndex}].Sets[${setIndex}].SetNumber"
-                        value="${setIndex + 1}" />
+                        value="${setNumber}" />
                     </div>
                     <div class="col-4">
                         <input class="form-control form-control-sm text-center"
@@ -147,9 +147,7 @@
                 let setRows = exerciseDiv.querySelectorAll(".setRow");
                 setRows.forEach((setRow, index) => {
                     let setNumberInput = setRow.querySelector("input[name$='.SetNumber']");
-                    //code below seem to work
                     setNumberInput.value = index + 1;
-
                     //also renumber set index
                     let exerciseDiv = setRow.closest(".exerciseDiv");
                     let exIndex = parseInt(exerciseDiv.id.split(".")[1]);

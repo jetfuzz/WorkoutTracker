@@ -30,10 +30,11 @@
                             </div>
                         }
                     </div>
-                    <hr />
+                    @* <hr /> *@
                 }
-                <div class="d-flex mb-3">   
+                <div class="d-flex mb-3 gap-2">
                     <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
                 </div>
             </div>
         </div>
