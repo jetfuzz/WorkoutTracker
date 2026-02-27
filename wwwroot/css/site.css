@@ -15,8 +15,8 @@ html {
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
@@ -31,4 +31,14 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/* exercise page*/
+
+.modal-body {
+    height: 85vh;
+}
+
+.exercise-selection-div:hover {
+    background-color: #f8f9fa;
 }

@@ -22,8 +22,10 @@ namespace WorkoutTracker.Controllers
         // GET: Exercises
         public async Task<IActionResult> Index()
         {
-            var workoutTrackerContext = _context.Exercises.Include(e => e.MuscleGroup);
-            return View(await workoutTrackerContext.ToListAsync());
+            ExerciseIndexVM vm = new ExerciseIndexVM();
+            vm.Exercises = await _context.Exercises.Include(e => e.MuscleGroup).ToListAsync();
+            vm.MuscleGroups = await _context.MuscleGroups.ToListAsync();
+            return View(vm);
         }
 
         // GET: Exercises/Details/5

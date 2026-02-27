@@ -78,6 +78,7 @@
                 <button type="button" class="btn w-100 addSetBtn">+ Add Set</button>
             `;
             container.appendChild(newExerciseDiv);
+
             createSetDiv(newExerciseDiv, exerciseIndex);
             exerciseIndex++;
         }
@@ -123,12 +124,13 @@
         }
 
         function renumberExerciseIndex() {
+            //loop thru all exercises first, ensuring all ids are correct for model binding
             let exerciseDivs = exerciseContainer.querySelectorAll(".exerciseDiv");
             exerciseDivs.forEach((exerciseDiv, index) => {
                 exerciseDiv.id = `exercise.${index}`;
                 let selectInput = exerciseDiv.querySelector("select");
                 selectInput.name = `Exercises[${index}].ExerciseId`;
-                //renumber set inputs
+                //renumber set inputs as well to ensure hidden values are still correct
                 let setRows = exerciseDiv.querySelectorAll(".setRow");
                 setRows.forEach((setRow, setIndex) => {
                     let setNumberInput = setRow.querySelector("input[name$='.SetNumber']");
@@ -148,7 +150,8 @@
                 setRows.forEach((setRow, index) => {
                     let setNumberInput = setRow.querySelector("input[name$='.SetNumber']");
                     setNumberInput.value = index + 1;
-                    //also renumber set index
+                    //also renumber set index for model binding
+                    //first, get exercise id for the current set being altered, then update hidden name values
                     let exerciseDiv = setRow.closest(".exerciseDiv");
                     let exIndex = parseInt(exerciseDiv.id.split(".")[1]);
                     setNumberInput.name = `Exercises[${exIndex}].Sets[${index}].SetNumber`;
@@ -164,26 +167,25 @@
             createExerciseDiv(exerciseContainer);
         })
 
+        //event delegation for handling button events on each exercise card
         exerciseContainer.addEventListener("click", (e) => {
             if (e.target.closest(".removeSetBtn")) {
-                //remove set and renumber sets
                 let setRow = e.target.closest(".setRow");
                 let setContainer = setRow.parentElement;
                 setContainer.removeChild(setRow);
                 renumberSets();
             } if (e.target.closest(".addSetBtn")) {
-                //add set
                 let exerciseDiv = e.target.closest(".exerciseDiv");
                 let exIndex = parseInt(exerciseDiv.id.split(".")[1]);
                 createSetDiv(exerciseDiv, exIndex);
             } if (e.target.closest(".removeExerciseBtn")) {
-                //remove exercise and renumber exercises
                 let exerciseDiv = e.target.closest(".exerciseDiv");
                 exerciseContainer.removeChild(exerciseDiv);
                 renumberExerciseIndex();
             }
         });
 
+        //page starts with one default exercise
         window.addEventListener("load", (e) => {
             createExerciseDiv(exerciseContainer);
         });

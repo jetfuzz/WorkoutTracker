@@ -42,50 +42,9 @@
     </div>
 </div>
 
-@* 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Date)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                Exercises
-            </th>
-            <th>
-                Sets
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var workout in Model) {
-    
-        <tr>
-            <td>
-                    @workout.Date.ToString("MMMM dd, yyyy")
-            </td>
-            <td>
-                    @Html.DisplayFor(modelItem => workout.Name)
-            </td>
-                @foreach (var we in workout.WorkoutExercises)
-                {
-                    <td>
-                        @(we.Exercise.Name)
-                    </td>
-                    <td>
-                       @we.Sets.Count
-                    </td>
-                }
-             <td>
-                    <a asp-action="Edit" asp-route-id="@workout.Id">Edit</a> 
-                    <a asp-action="Details" asp-route-id="@workout.Id">Details</a> 
-                    <a asp-action="Delete" asp-route-id="@workout.Id">Delete</a>
-            </td> 
-        </tr>
-}
-    </tbody>
-</table> *@
+
+@*
+<a asp-action="Edit" asp-route-id="@workout.Id">Edit</a> 
+<a asp-action="Details" asp-route-id="@workout.Id">Details</a> 
+<a asp-action="Delete" asp-route-id="@workout.Id">Delete</a>
+*@
