@@ -36,15 +36,23 @@ namespace WorkoutTracker.Controllers
                 return NotFound();
             }
 
-            var exercise = await _context.Exercises
+            ExerciseDetailsVM vm = new ExerciseDetailsVM();
+
+            vm.Exercise = await _context.Exercises
                 .Include(e => e.MuscleGroup)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (exercise == null)
-            {
-                return NotFound();
-            }
 
-            return View(exercise);
+            vm.WorkoutData = await _context.WorkoutExercises
+                .Where(we => we.ExerciseId == id)
+                .Include(we => we.Workout)
+                .Select(we => new WorkoutVM
+                {
+                    Date = we.Workout.Date,
+                    HighestWeight = we.Sets.Max(s => s.Weight)
+                })
+                .ToListAsync();
+
+            return View(vm);
         }
 
         // GET: Exercises/Create
