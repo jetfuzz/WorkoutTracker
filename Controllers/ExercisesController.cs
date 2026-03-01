@@ -42,6 +42,11 @@ namespace WorkoutTracker.Controllers
                 .Include(e => e.MuscleGroup)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
+            if (vm.Exercise == null)
+            {
+                return NotFound();
+            }
+
             vm.WorkoutData = await _context.WorkoutExercises
                 .Where(we => we.ExerciseId == id)
                 .Include(we => we.Workout)

@@ -25,6 +25,11 @@
                 }
             </select>
 
+            <div class="input-group rounded-3 mb-3">
+                <span class="input-group-text bi-search border-0 text-secondary pe-1" style="background-color: #e2e5e9;"></span>
+                <input class="form-control mr-sm-2 border-0 shadow-none" type="search" placeholder="Search Exercises" aria-label="Search" id="searchInput" style="background-color: #e2e5e9;">
+            </div>
+
             <div class="card overflow-auto" style="max-height: 650px;">
                 @foreach (var exercise in Model.Exercises)
                 {
@@ -45,17 +50,29 @@
     }
     <script>
         const muscleGroupSelectList = document.getElementById("muscleGroupSelectList");
+        const searchInput = document.getElementById("searchInput");
 
-        muscleGroupSelectList.addEventListener("change", (e) => {
-            const currentMuscleGroupId = e.target.value;
+        function filterExercises() {
+            const currentMuscleGroupId = muscleGroupSelectList.value;
             const exercises = document.querySelectorAll(".exercise-selection-div");
+            const searchQuery = searchInput.value.toLowerCase();
+
             exercises.forEach(exercise => {
-                if (currentMuscleGroupId === "all" || exercise.dataset.mgId === currentMuscleGroupId) {
-                    exercise.style.display = "block";
+                let para = exercise.getElementsByTagName("p")[0];
+                let txtValue = para.textContent.toLowerCase();
+
+                const isSameMuscleGroup = currentMuscleGroupId === "all" || exercise.dataset.mgId === currentMuscleGroupId;
+                const matchesQuery = txtValue.includes(searchQuery);
+
+                if (isSameMuscleGroup && matchesQuery) {
+                    exercise.style.display = "";
                 } else {
                     exercise.style.display = "none";
                 }
             });
-        });
+        }
+
+        searchInput.addEventListener("input", filterExercises)
+        muscleGroupSelectList.addEventListener("change", filterExercises);
     </script>
 }
