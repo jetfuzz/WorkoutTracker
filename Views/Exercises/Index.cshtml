@@ -1,0 +1,78 @@
+﻿@model WorkoutTracker.Models.ExerciseIndexVM
+
+@{
+    ViewData["Title"] = "Exercises";
+}
+
+@* 
+    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+ *@
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold">Exercises</h3>
+            </div>
+
+            <select class="form-control mb-3" id="muscleGroupSelectList">
+                <option value="all">All Muscles</option>
+                @foreach (var muscleGroup in Model.MuscleGroups)
+                {
+                    <option value="@muscleGroup.Id">@muscleGroup.Name</option>
+                }
+            </select>
+
+            <div class="input-group rounded-3 mb-3">
+                <span class="input-group-text bi-search border-0 text-secondary pe-1" style="background-color: #e2e5e9;"></span>
+                <input class="form-control mr-sm-2 border-0 shadow-none" type="search" placeholder="Search Exercises" aria-label="Search" id="searchInput" style="background-color: #e2e5e9;">
+            </div>
+
+            <div class="card overflow-auto" style="max-height: 650px;">
+                @foreach (var exercise in Model.Exercises)
+                {
+                    <div class="position-relative p-2 rounded-3 exercise-selection-div" data-mg-id="@exercise.MuscleGroup.Id">
+                        <a asp-action="Details" asp-route-id="@exercise.Id" class="stretched-link"></a>
+                        <p class="m-0">@exercise.Name</p>
+                        <p class="text-secondary pb-0 mb-1">@exercise.MuscleGroup.Name</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        const muscleGroupSelectList = document.getElementById("muscleGroupSelectList");
+        const searchInput = document.getElementById("searchInput");
+
+        function filterExercises() {
+            const currentMuscleGroupId = muscleGroupSelectList.value;
+            const exercises = document.querySelectorAll(".exercise-selection-div");
+            const searchQuery = searchInput.value.toLowerCase();
+
+            exercises.forEach(exercise => {
+                let para = exercise.getElementsByTagName("p")[0];
+                let txtValue = para.textContent.toLowerCase();
+
+                const isSameMuscleGroup = currentMuscleGroupId === "all" || exercise.dataset.mgId === currentMuscleGroupId;
+                const matchesQuery = txtValue.includes(searchQuery);
+
+                if (isSameMuscleGroup && matchesQuery) {
+                    exercise.style.display = "";
+                } else {
+                    exercise.style.display = "none";
+                }
+            });
+        }
+
+        searchInput.addEventListener("input", filterExercises)
+        muscleGroupSelectList.addEventListener("change", filterExercises);
+    </script>
+}

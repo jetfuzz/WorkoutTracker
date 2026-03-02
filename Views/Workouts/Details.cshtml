@@ -1,0 +1,44 @@
+﻿@model WorkoutTracker.Models.Workout
+
+@{
+    ViewData["Title"] = "Workout Details";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+            <div class="card pt-4 px-4 border-0">
+                <p class="fw-bold mb-0">Username</p>
+                <p class="text-muted small mb-1">@Model.Date.ToString("MMMM dd, yyyy")</p>
+                <p class="fw-bold fs-4 mb-3">@Model.Name</p>
+                @foreach (var workoutExercise in Model.WorkoutExercises)
+                {
+                    <p class="fw-bold fs-5 mb-2">@workoutExercise.Exercise.Name</p>
+                    <div class="setDiv pt-2">
+                        <div class="row text-secondary" style="font-size: 0.75rem;">
+                            <p class="col-3 control-label small">SETS</p>
+                            <p class="col-auto small text-center">WEIGHT & REPS</p>
+                        </div>
+
+                        @foreach (var set in workoutExercise.Sets)
+                        {
+                            <div class="row mb-1">
+                                <p class="col-3 control-label fw-bold ps-4">@set.SetNumber</p>
+                                <p class="col-auto text-center">@set.Weight lbs x @set.Repetitions reps</p>
+                            </div>
+                        }
+                    </div>
+                }
+                <div class="d-flex mb-3 gap-2">
+                    <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* <div class="p-4">
+     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a class="btn btn-secondary w-50" asp-action="Index">Back to List</a>
+</div>  *@
