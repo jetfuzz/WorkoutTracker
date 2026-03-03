@@ -94,9 +94,9 @@
             newSetDiv.innerHTML = `
                 <div class="row justify-content-center align-items-center">
                     <div class="col-2">
-                        <input class="form-control form-control-sm text-center  fw-bold"
-                        readonly type="number"
-
+                        <input class="form-control form-control-sm text-center fw-bold"
+                        readonly 
+                        type="number"
                         name="Exercises[${exIndex}].Sets[${setIndex}].SetNumber"
                         value="${setNumber}" />
                     </div>
@@ -120,7 +120,6 @@
                 </div>
             `;
             setContainer.appendChild(newSetDiv);
-            setIndex++;
         }
 
         function renumberExerciseIndex() {
