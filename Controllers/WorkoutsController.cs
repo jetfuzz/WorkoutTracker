@@ -57,7 +57,7 @@ namespace WorkoutTracker.Controllers
         // GET: Workouts/Create
         public IActionResult Create()
         {
-            WorkoutCreateVM vm = new WorkoutCreateVM();
+            WorkoutFormVM vm = new WorkoutFormVM();
             vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
             return View(vm);
         }
@@ -67,7 +67,7 @@ namespace WorkoutTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(WorkoutCreateVM vm)
+        public async Task<IActionResult> Create(WorkoutFormVM vm)
         {
             if (ModelState.IsValid)
             {
@@ -114,17 +114,48 @@ namespace WorkoutTracker.Controllers
         // GET: Workouts/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            WorkoutFormVM vm = new WorkoutFormVM();
+            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+
             if (id == null)
             {
                 return NotFound();
             }
 
-            var workout = await _context.Workouts.FindAsync(id);
+            var workout = await _context.Workouts
+                .Include(w => w.WorkoutExercises)
+                    .ThenInclude(we => we.Exercise)
+                .Include(w => w.WorkoutExercises)
+                    .ThenInclude(we => we.Sets)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (workout == null)
             {
                 return NotFound();
             }
-            return View(workout);
+
+            //map the workout object to the workout form view model
+            vm.WorkoutId = workout.Id;
+            vm.Name = workout.Name;
+            vm.Date = workout.Date;
+
+            if (workout.WorkoutExercises != null)
+            {
+                vm.Exercises = workout.WorkoutExercises.Select(we => new WorkoutExerciseVM
+                {
+                    Id = we.Id,
+                    ExerciseId = we.ExerciseId,
+                    Sets = we.Sets.Select(s => new SetVM
+                    {
+                        Id = s.Id,
+                        Repetitions = s.Repetitions,
+                        Weight = s.Weight,
+                        SetNumber = s.SetNumber
+                    }).ToList()
+                }).ToList();
+            }
+
+            return View(vm);
         }
 
         // POST: Workouts/Edit/5
@@ -132,18 +163,22 @@ namespace WorkoutTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Name")] Workout workout)
+        public async Task<IActionResult> Edit(int id, WorkoutFormVM vm)
         {
-            if (id != workout.Id)
-            {
-                return NotFound();
-            }
+            if (id != vm.WorkoutId) return NotFound();
 
             if (ModelState.IsValid)
             {
+                var workout = await _context.Workouts
+                    .Include(w => w.WorkoutExercises)
+                        .ThenInclude(we => we.Exercise)
+                    .Include(w => w.WorkoutExercises)
+                        .ThenInclude(we => we.Sets)
+                    .FirstOrDefaultAsync(m => m.Id == id);
                 try
                 {
-                    _context.Update(workout);
+                    workout.Date = vm.Date;
+                    workout.Name = vm.Name;
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -159,7 +194,8 @@ namespace WorkoutTracker.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(workout);
+            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+            return View(vm);
         }
 
         // GET: Workouts/Delete/5
