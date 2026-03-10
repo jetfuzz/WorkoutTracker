@@ -31,6 +31,7 @@ namespace WorkoutTracker.Controllers
                     .ThenInclude(we => we.Exercise)
                 .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Sets)
+                .Where(m => m.UserId == userId)
                 .OrderByDescending(w => w.Date);
             return View(await context.ToListAsync());
         }
@@ -38,12 +39,11 @@ namespace WorkoutTracker.Controllers
         // GET: Workouts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+
             var workout = await _context.Workouts
                 .Include(w => w.WorkoutExercises) 
                     .ThenInclude(we => we.Exercise)
@@ -51,7 +51,10 @@ namespace WorkoutTracker.Controllers
                     .ThenInclude(we => we.Sets)
                 .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
 
+            if (workout == null) return NotFound();
+
             WorkoutDetailsVM vm = new WorkoutDetailsVM();
+
             vm.WorkoutId = workout.Id;
             vm.Name = workout.Name;
             vm.Date = workout.Date;
