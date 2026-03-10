@@ -1,4 +1,4 @@
-﻿@model WorkoutTracker.Models.WorkoutCreateVM
+﻿@model WorkoutTracker.Models.WorkoutFormVM
 
 @{
     ViewData["Title"] = "Create Workout";
@@ -45,6 +45,7 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/workoutForm.js"></script>
     <script>
         let exerciseIndex = 0;
         const addExerciseBtn = document.getElementById("addExerciseBtn");
@@ -83,91 +84,10 @@
             exerciseIndex++;
         }
 
-        function createSetDiv(container, exIndex) {
-            //calculate setNumber and setIndex based on current total amount of sets in the exerciseDiv
-            let setIndex = container.querySelectorAll(".setRow").length;
-            let setNumber = setIndex + 1;
-            let setContainer = container.querySelector(".setDiv");
-
-            let newSetDiv = document.createElement("div");
-            newSetDiv.classList.add("setRow", "mb-2", "align-items-center");
-            newSetDiv.innerHTML = `
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-2">
-                        <input class="form-control form-control-sm text-center  fw-bold"
-                        readonly type="number"
-
-                        name="Exercises[${exIndex}].Sets[${setIndex}].SetNumber"
-                        value="${setNumber}" />
-                    </div>
-                    <div class="col-4">
-                        <input class="form-control form-control-sm text-center"
-                        type="number"
-                        required
-                        name="Exercises[${exIndex}].Sets[${setIndex}].Weight"
-                        min="0" />
-                    </div>
-                    <div class="col-4">
-                        <input class="col-4 form-control form-control-sm text-center"
-                        type="number"
-                        required
-                        name="Exercises[${exIndex}].Sets[${setIndex}].Repetitions"
-                        min="1"/>
-                    </div>
-                    <div class="col-2">
-                        <button type="button" class="btn-close removeSetBtn"></button>
-                    </div>
-                </div>
-            `;
-            setContainer.appendChild(newSetDiv);
-            setIndex++;
-        }
-
-        function renumberExerciseIndex() {
-            //loop thru all exercises first, ensuring all ids are correct for model binding
-            let exerciseDivs = exerciseContainer.querySelectorAll(".exerciseDiv");
-            exerciseDivs.forEach((exerciseDiv, index) => {
-                exerciseDiv.id = `exercise.${index}`;
-                let selectInput = exerciseDiv.querySelector("select");
-                selectInput.name = `Exercises[${index}].ExerciseId`;
-                //renumber set inputs as well to ensure hidden values are still correct
-                let setRows = exerciseDiv.querySelectorAll(".setRow");
-                setRows.forEach((setRow, setIndex) => {
-                    let setNumberInput = setRow.querySelector("input[name$='.SetNumber']");
-                    setNumberInput.name = `Exercises[${index}].Sets[${setIndex}].SetNumber`;
-                    let weightInput = setRow.querySelector("input[name$='.Weight']");
-                    weightInput.name = `Exercises[${index}].Sets[${setIndex}].Weight`;
-                    let repsInput = setRow.querySelector("input[name$='.Repetitions']");
-                    repsInput.name = `Exercises[${index}].Sets[${setIndex}].Repetitions`;
-                });
-            });
-        }
-
-        function renumberSets() {
-            let exerciseDivs = document.querySelectorAll(".exerciseDiv");
-            exerciseDivs.forEach((exerciseDiv) => {
-                let setRows = exerciseDiv.querySelectorAll(".setRow");
-                setRows.forEach((setRow, index) => {
-                    let setNumberInput = setRow.querySelector("input[name$='.SetNumber']");
-                    setNumberInput.value = index + 1;
-                    //also renumber set index for model binding
-                    //first, get exercise id for the current set being altered, then update hidden name values
-                    let exerciseDiv = setRow.closest(".exerciseDiv");
-                    let exIndex = parseInt(exerciseDiv.id.split(".")[1]);
-                    setNumberInput.name = `Exercises[${exIndex}].Sets[${index}].SetNumber`;
-                    let weightInput = setRow.querySelector("input[name$='.Weight']");
-                    weightInput.name = `Exercises[${exIndex}].Sets[${index}].Weight`;
-                    let repsInput = setRow.querySelector("input[name$='.Repetitions']");
-                    repsInput.name = `Exercises[${exIndex}].Sets[${index}].Repetitions`;
-                });
-            });
-        }
-
         addExerciseBtn.addEventListener("click", () => {
             createExerciseDiv(exerciseContainer);
         })
 
-        //event delegation for handling button events on each exercise card
         exerciseContainer.addEventListener("click", (e) => {
             if (e.target.closest(".removeSetBtn")) {
                 let setRow = e.target.closest(".setRow");
@@ -185,7 +105,6 @@
             }
         });
 
-        //page starts with one default exercise
         window.addEventListener("load", (e) => {
             createExerciseDiv(exerciseContainer);
         });
