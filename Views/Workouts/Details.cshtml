@@ -1,4 +1,4 @@
-﻿@model WorkoutTracker.Models.Workout
+﻿@model WorkoutTracker.Models.WorkoutDetailsVM
 
 @{
     ViewData["Title"] = "Workout Details";
@@ -11,9 +11,18 @@
                 <p class="fw-bold mb-0">Username</p>
                 <p class="text-muted small mb-1">@Model.Date.ToString("MMMM dd, yyyy")</p>
                 <p class="fw-bold fs-4 mb-3">@Model.Name</p>
-                @foreach (var workoutExercise in Model.WorkoutExercises)
+                @foreach (var workoutExercise in Model.Exercises)
                 {
-                    <p class="fw-bold fs-5 mb-2">@workoutExercise.Exercise.Name</p>
+                    <div class="d-flex mb-2 align-items-center justify-content-between">
+                        <p class="fw-bold fs-5 mb-0">@workoutExercise.ExerciseName</p>
+                        @if (workoutExercise.isBestWeight)
+                        {
+                            <span class="badge bg-warning text-muted mx-3 mt-1">
+                                <i class="bi bi-trophy-fill"></i> Best Weight
+                            </span>
+                        }
+                    </div>
+
                     <div class="setDiv pt-2">
                         <div class="row text-secondary" style="font-size: 0.75rem;">
                             <p class="col-3 control-label small">SETS</p>
@@ -29,10 +38,12 @@
                         }
                     </div>
                 }
-                <div class="d-flex mb-3 gap-2">
-                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
-                    <a class="btn btn-secondary" asp-action="Index">Back to List</a>
-                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+                <div class="d-flex mb-3 gap-2 justify-content-between">
+                    <div class="gap-2">
+                        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model?.WorkoutId">Edit</a>
+                        <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+                    </div>
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.WorkoutId">Delete</a>
                 </div>
             </div>
         </div>

@@ -46,12 +46,43 @@ namespace WorkoutTracker.Controllers
                     .ThenInclude(we => we.Sets)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
+            WorkoutDetailsVM vm = new WorkoutDetailsVM();
+            vm.WorkoutId = workout.Id;
+            vm.Name = workout.Name;
+            vm.Date = workout.Date;
+
+            if (workout.WorkoutExercises != null)
+            {
+                vm.Exercises = workout.WorkoutExercises.Select(we => new WorkoutExerciseDetailsVM
+                {
+                    ExerciseId = we.ExerciseId,
+                    ExerciseName = we.Exercise.Name,
+                    Sets = we.Sets.Select(s => new SetVM
+                    {
+                        Repetitions = s.Repetitions,
+                        Weight = s.Weight,
+                        SetNumber = s.SetNumber
+                    }).ToList()
+                }).ToList();
+            }
+
+            foreach (var exercise in vm.Exercises)
+            {
+                var bestWeight = _context.Set
+                    .Where(s => s.WorkoutExercise.ExerciseId == exercise.ExerciseId)
+                    .OrderByDescending(s => s.Weight)
+                    .FirstOrDefault()?.Weight ?? 0;
+    
+                exercise.isBestWeight = exercise.Sets.Any(s => s.Weight >= bestWeight);
+            }
+
+
             if (workout == null)
             {
                 return NotFound();
             }
 
-            return View(workout);
+            return View(vm);
         }
 
         // GET: Workouts/Create
