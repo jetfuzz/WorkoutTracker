@@ -109,9 +109,6 @@
                     <input type="button" value="Cancel" class="btn btn-secondary w-50" onclick="location.href='@Url.Action("Index")';" />
                 </div>
             </form>
-            <div>
-                <a asp-action="Index">Back to List</a>
-            </div>
         </div>
     </div>
 </div>
@@ -120,66 +117,6 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="~/js/workoutForm.js"></script>
     <script>
-        let exerciseIndex = document.querySelectorAll(".exerciseDiv").length;
-        const addExerciseBtn = document.getElementById("addExerciseBtn");
-        let exerciseContainer = document.getElementById("exerciseContainer");
-
-        function createExerciseDiv(container) {
-            let newExerciseDiv = document.createElement("div");
-            newExerciseDiv.id = `exercise.${exerciseIndex}`;
-            newExerciseDiv.classList.add("exerciseDiv", "p-3", "mb-4", "card", "border-0");
-            newExerciseDiv.innerHTML = `
-                <input type="hidden" name="Exercises[${exerciseIndex}].Id" value="0" />
-                <div class="form-group">
-                    <div class="d-flex gap-2 mb-3 align-items-center">
-                        <select name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
-                            @foreach (var exercise in Model.ExerciseSelectList)
-                            {
-                                                <option value="@exercise.Value">@exercise.Text</option>
-                            }
-                        </select>
-                        <button type="button" class="btn-close removeExerciseBtn"></button>
-                    </div>
-                </div>
-
-                <div class="form-group setDiv">
-                    <div class="row mb-1 text-secondary"  style="font-size: 0.75rem;">
-                        <label class="col-2 control-label small text-center">SET</label>
-                        <label class="col-4 control-label small text-center">LBS</label>
-                        <label class="col-4 control-label small text-center">REPS</label>
-                        <div class="col-2"></div>
-                    </div>
-                </div>
-                <button type="button" class="btn w-100 addSetBtn">+ Add Set</button>
-            `;
-            container.appendChild(newExerciseDiv);
-
-            createSetDiv(newExerciseDiv, exerciseIndex);
-            exerciseIndex++;
-        };
-
-        addExerciseBtn.addEventListener("click", () => {
-            createExerciseDiv(exerciseContainer);
-        });
-
-        //event delegation for handling button events on each exercise card
-        exerciseContainer.addEventListener("click", (e) => {
-            if (e.target.closest(".removeSetBtn")) {
-                let setRow = e.target.closest(".setRow");
-                let setContainer = setRow.parentElement;
-                setContainer.removeChild(setRow);
-                renumberSets();
-            } if (e.target.closest(".addSetBtn")) {
-                let exerciseDiv = e.target.closest(".exerciseDiv");
-                let exIndex = parseInt(exerciseDiv.id.split(".")[1]);
-                createSetDiv(exerciseDiv, exIndex);
-            } if (e.target.closest(".removeExerciseBtn")) {
-                let exerciseDiv = e.target.closest(".exerciseDiv");
-                exerciseContainer.removeChild(exerciseDiv);
-                renumberExerciseIndex();
-            }
-        });
-
         window.addEventListener("load", (e) => {
            //ensures each exercise div and set have correct name attributes on page load
            renumberExerciseIndex()
