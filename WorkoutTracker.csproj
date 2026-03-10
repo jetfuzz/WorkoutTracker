@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.12" />
     <Compile Remove="Models\WorkoutCreateVM.cs" />
     <Compile Remove="Models\WorkoutEditVM.cs" />
     <Compile Remove="Models\WorkoutVM.cs" />

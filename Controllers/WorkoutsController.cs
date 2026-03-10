@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +12,7 @@ using WorkoutTracker.Models;
 
 namespace WorkoutTracker.Controllers
 {
+    [Authorize]
     public class WorkoutsController : Controller
     {
         private readonly WorkoutTrackerContext _context;
@@ -22,6 +25,7 @@ namespace WorkoutTracker.Controllers
         // GET: Workouts
         public async Task<IActionResult> Index()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var context = _context.Workouts
                 .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Exercise)
@@ -39,12 +43,13 @@ namespace WorkoutTracker.Controllers
                 return NotFound();
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var workout = await _context.Workouts
                 .Include(w => w.WorkoutExercises) 
                     .ThenInclude(we => we.Exercise)
                 .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Sets)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
 
             WorkoutDetailsVM vm = new WorkoutDetailsVM();
             vm.WorkoutId = workout.Id;
@@ -107,6 +112,7 @@ namespace WorkoutTracker.Controllers
 
                 //map the properties from the workout to the workout object
                 //workout.UserId = (get user id based on the current logged in user)
+                workout.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
                 workout.Name = vm.Name;
                 workout.Date = vm.Date;
                 _context.Add(workout);
@@ -152,13 +158,15 @@ namespace WorkoutTracker.Controllers
             {
                 return NotFound();
             }
-
+            
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var workout = await _context.Workouts
                 .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Exercise)
                 .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Sets)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
 
             if (workout == null)
             {
@@ -200,12 +208,13 @@ namespace WorkoutTracker.Controllers
 
             if (ModelState.IsValid)
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var workout = await _context.Workouts
                     .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Exercise)
                     .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Sets)
-                    .FirstOrDefaultAsync(m => m.Id == id);
+                    .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
                 try
                 {
                     workout.Date = vm.Date;
@@ -236,9 +245,9 @@ namespace WorkoutTracker.Controllers
             {
                 return NotFound();
             }
-
-            var workout = await _context.Workouts
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var workout = await _context.Workouts.
+                FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
             if (workout == null)
             {
                 return NotFound();
@@ -252,7 +261,9 @@ namespace WorkoutTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var workout = await _context.Workouts.FindAsync(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var workout = await _context.Workouts.FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+
             if (workout != null)
             {
                 _context.Workouts.Remove(workout);

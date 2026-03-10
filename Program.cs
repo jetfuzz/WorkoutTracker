@@ -1,9 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using WorkoutTracker.Data;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WorkoutTrackerContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WorkoutTrackerContext") ?? throw new InvalidOperationException("Connection string 'WorkoutTrackerContext' not found.")));
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContext")));
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -21,6 +32,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -29,6 +41,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapRazorPages();
 
 
 app.Run();
