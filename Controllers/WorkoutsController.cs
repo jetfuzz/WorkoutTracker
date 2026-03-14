@@ -43,7 +43,6 @@ namespace WorkoutTracker.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-
             var workout = await _context.Workouts
                 .Include(w => w.WorkoutExercises) 
                     .ThenInclude(we => we.Exercise)
@@ -77,17 +76,10 @@ namespace WorkoutTracker.Controllers
             foreach (var exercise in vm.Exercises)
             {
                 var bestWeight = _context.Set
-                    .Where(s => s.WorkoutExercise.ExerciseId == exercise.ExerciseId)
+                    .Where(s => s.WorkoutExercise.ExerciseId == exercise.ExerciseId && s.WorkoutExercise.Workout.UserId == userId)
                     .OrderByDescending(s => s.Weight)
                     .FirstOrDefault()?.Weight ?? 0;
-    
                 exercise.isBestWeight = exercise.Sets.Any(s => s.Weight >= bestWeight);
-            }
-
-
-            if (workout == null)
-            {
-                return NotFound();
             }
 
             return View(vm);
