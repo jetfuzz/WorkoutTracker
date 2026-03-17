@@ -19,8 +19,38 @@
                 <div class="card px-4 pt-4 m-3 border-0 rounded-3">
                     <a asp-action="Details" asp-route-id="@workout.Id" class="stretched-link"></a>
                     <p class="fw-bold mb-0">@User.FindFirstValue(ClaimTypes.Name)</p>
-                    <p class="text-muted small mb-1">@workout.Date.ToString("MMMM dd, yyyy")</p>
-                    <p class="fw-bold fs-5 mb-1">@workout.Name</p>
+                    <p class="text-muted small mb-2">@workout.Date.ToString("MMMM dd, yyyy")</p>
+
+                    <p class="fw-bold fs-5 mb-2">@workout.Name</p>
+
+                    <div class="d-flex">
+                        <div class="me-4">
+                            <p class="text-muted small mb-0">Volume</p>
+                            @{
+                                var workoutVolume = 0;
+                                foreach (var workoutExercise in workout.WorkoutExercises)
+                                {
+                                    foreach (var set in workoutExercise.Sets)
+                                    {
+                                        workoutVolume += (int)(set.Repetitions * set.Weight);
+                                    }
+                                }
+                            }
+                            <p>@workoutVolume lbs</p>
+                        </div>
+
+                        <div>
+                            <p class="text-muted small mb-0">Sets</p>
+                            @{
+                                var setCount = 0;
+                                @foreach (var workoutExercise in workout.WorkoutExercises)
+                                {
+                                    setCount += workoutExercise.Sets.Count();
+                                }
+                            }
+                            <p>@setCount</p>
+                        </div>
+                    </div>
                     <hr class="text-secondary" />
 
                     @* only display first 3 exercises per result  *@

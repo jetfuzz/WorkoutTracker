@@ -12,6 +12,36 @@
                 <p class="fw-bold mb-0">@User.FindFirstValue(ClaimTypes.Name)</p>
                 <p class="text-muted small mb-1">@Model.Date.ToString("MMMM dd, yyyy")</p>
                 <p class="fw-bold fs-4 mb-3">@Model.Name</p>
+
+                <div class="d-flex">
+                    <div class="me-4">
+                        <p class="text-muted small mb-0">Volume</p>
+                        @{
+                            var workoutVolume = 0;
+                            foreach (var workoutExercise in Model.Exercises)
+                            {
+                                foreach (var set in workoutExercise.Sets)
+                                {
+                                    workoutVolume += (int)(set.Repetitions * set.Weight);
+                                }
+                            }
+                        }
+                        <p>@workoutVolume lbs</p>
+                    </div>
+
+                    <div>
+                        <p class="text-muted small mb-0">Sets</p>
+                        @{
+                            var setCount = 0;
+                            @foreach (var workoutExercise in Model.Exercises)
+                            {
+                                setCount += workoutExercise.Sets.Count();
+                            }
+                        }
+                        <p>@setCount</p>
+                    </div>
+                </div>
+
                 @foreach (var workoutExercise in Model.Exercises)
                 {
                     <div class="d-flex mb-2 align-items-center justify-content-between">
