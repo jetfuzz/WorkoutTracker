@@ -31,6 +31,7 @@ namespace WorkoutTracker.Controllers
                     .ThenInclude(we => we.Exercise)
                 .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Sets)
+                .Where(m => m.UserId == userId)
                 .OrderByDescending(w => w.Date);
             return View(await context.ToListAsync());
         }
@@ -38,12 +39,10 @@ namespace WorkoutTracker.Controllers
         // GET: Workouts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var workout = await _context.Workouts
                 .Include(w => w.WorkoutExercises) 
                     .ThenInclude(we => we.Exercise)
@@ -51,7 +50,10 @@ namespace WorkoutTracker.Controllers
                     .ThenInclude(we => we.Sets)
                 .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
 
+            if (workout == null) return NotFound();
+
             WorkoutDetailsVM vm = new WorkoutDetailsVM();
+
             vm.WorkoutId = workout.Id;
             vm.Name = workout.Name;
             vm.Date = workout.Date;
@@ -74,17 +76,10 @@ namespace WorkoutTracker.Controllers
             foreach (var exercise in vm.Exercises)
             {
                 var bestWeight = _context.Set
-                    .Where(s => s.WorkoutExercise.ExerciseId == exercise.ExerciseId)
+                    .Where(s => s.WorkoutExercise.ExerciseId == exercise.ExerciseId && s.WorkoutExercise.Workout.UserId == userId)
                     .OrderByDescending(s => s.Weight)
                     .FirstOrDefault()?.Weight ?? 0;
-    
                 exercise.isBestWeight = exercise.Sets.Any(s => s.Weight >= bestWeight);
-            }
-
-
-            if (workout == null)
-            {
-                return NotFound();
             }
 
             return View(vm);
@@ -94,7 +89,8 @@ namespace WorkoutTracker.Controllers
         public IActionResult Create()
         {
             WorkoutFormVM vm = new WorkoutFormVM();
-            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+            vm.AllExercises = _context.Exercises.Include(e => e.MuscleGroup).ToList();
+            vm.MuscleGroups = _context.MuscleGroups.ToList();
             return View(vm);
         }
 
@@ -111,7 +107,6 @@ namespace WorkoutTracker.Controllers
                 Workout workout = new Workout();
 
                 //map the properties from the workout to the workout object
-                //workout.UserId = (get user id based on the current logged in user)
                 workout.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
                 workout.Name = vm.Name;
                 workout.Date = vm.Date;
@@ -152,7 +147,8 @@ namespace WorkoutTracker.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             WorkoutFormVM vm = new WorkoutFormVM();
-            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+            vm.AllExercises = _context.Exercises.Include(e => e.MuscleGroup).ToList();
+            vm.MuscleGroups = _context.MuscleGroups.ToList();
 
             if (id == null)
             {
@@ -234,7 +230,8 @@ namespace WorkoutTracker.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+            vm.AllExercises = _context.Exercises.Include(e => e.MuscleGroup).ToList();
+            vm.MuscleGroups = _context.MuscleGroups.ToList();
             return View(vm);
         }
 

@@ -36,15 +36,15 @@
                             <div class="form-group">
                                 <div class="d-flex gap-2 mb-3 align-items-center">
                                     <select disabled name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
-                                            @foreach (var exerciseOption in Model.ExerciseSelectList)
+                                            @foreach (var exerciseOption in Model.AllExercises)
                                             {
-                                                if (exerciseOption.Value == exercise.ExerciseId.ToString())
+                                                if (exerciseOption.Id == exercise.ExerciseId)
                                                 {
-                                                    <option value="@exerciseOption.Value" selected>@exerciseOption.Text</option>
+                                                    <option value="@exerciseOption.Id" selected>@exerciseOption.Name</option>
                                                 }
                                                 else
                                                 {
-                                                    <option value="@exerciseOption.Value">@exerciseOption.Text</option>
+                                                    <option value="@exerciseOption.Id">@exerciseOption.Name</option>
                                                 }
                                         }
                                     </select>
