@@ -42,3 +42,7 @@ body {
 .exercise-selection-div:hover {
     background-color: #f8f9fa;
 }
+
+.exercise-selection-div:hover {
+    cursor: pointer;
+}

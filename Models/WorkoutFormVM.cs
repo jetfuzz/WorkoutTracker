@@ -7,12 +7,16 @@ namespace WorkoutTracker.Models
         public int WorkoutId { get; set; }
         public string? Name { get; set; } = string.Empty;
         public DateTime Date { get; set; } = DateTime.Today;
-        public SelectList? ExerciseSelectList { get; set; }
         public List<WorkoutExerciseVM> Exercises { get; set; } = new();
+
+        //for populating modal
+        public List<MuscleGroup> MuscleGroups { get; set; } = new();
+        public List<Exercise> AllExercises { get; set; } = new();
     }
 
     public class WorkoutExerciseVM
     {
+        //nullable Id fields for distinguishing new exercises & sets on Edit/Post
         public int? Id { get; set; }
         public int ExerciseId { get; set; }
         public List<SetVM> Sets { get; set; } = new();

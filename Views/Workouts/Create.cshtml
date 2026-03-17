@@ -15,12 +15,12 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="Name" class="control-label"></label>
-                    <input asp-for="Name" class="form-control" placeholder="e.g. Leg Day" />
+                    <input asp-for="Name" class="form-control" required placeholder="e.g. Leg Day" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="Date" class="control-label"></label>
-                    <input asp-for="Date" type="date" class="form-control" />
+                    <input asp-for="Date" type="date" class="form-control" required />
                     <span asp-validation-for="Date" class="text-danger"></span>
                 </div>
                 
@@ -29,7 +29,7 @@
                 </div>
 
                 <div class="form-group">
-                    <button type="button" id="addExerciseBtn" class="btn btn-primary w-100">+ Add Exercise</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#exerciseModal" class="btn btn-primary w-100">+ Add Exercise</button>
                 </div>
                 <hr />
                 <div class="form-group d-flex gap-2">
@@ -37,6 +37,45 @@
                     <input type="button" value="Cancel" class="btn btn-secondary w-50" onclick="location.href='@Url.Action("Index")';" />
                 </div>
             </form>
+
+            <div id="exerciseModal" class="modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Select Exercise</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <div class="modal-body overflow-auto" id="exerciseList">
+                            <select class="form-control mb-3" id="muscleGroupSelectList">
+                                <option value="all">All Muscles</option>
+                                @foreach (var muscleGroup in Model.MuscleGroups)
+                                {
+                                    <option value="@muscleGroup.Id">@muscleGroup.Name</option>
+                                }
+                            </select>
+
+                            <div class="input-group rounded-3 mb-3">
+                                <span class="input-group-text bi bi-search border-0 text-secondary pe-1" style="background-color: #e2e5e9;"></span>
+                                <input class="form-control mr-sm-2 border-0 shadow-none" type="search" placeholder="Search Exercises" aria-label="Search" id="searchInput" style="background-color: #e2e5e9;">
+                            </div>
+
+                            @foreach (var exercise in Model.AllExercises)
+                            {
+                                <div id="@exercise.Id" data-exercise-name="@exercise.Name" data-mg-id="@exercise.MuscleGroup.Id" class="position-relative p-2 rounded-3 exercise-selection-div">
+                                    <a class="stretched-link" data-bs-dismiss="modal"></a>
+                                    <p class="m-0">@exercise.Name</p>
+                                    <p class="text-secondary pb-0 mb-1">@exercise.MuscleGroup.Name</p>
+                                </div>
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -46,23 +85,26 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script src="~/js/workoutForm.js"></script>
+    <script src="~/js/exerciseFilter.js"></script>
     <script>
         let exerciseIndex = 0;
-        const addExerciseBtn = document.getElementById("addExerciseBtn");
-        let exerciseContainer = document.getElementById("exerciseContainer");
+        const exerciseContainer = document.getElementById("exerciseContainer");
+        const muscleGroupSelectList = document.getElementById("muscleGroupSelectList");
+        const searchInput = document.getElementById("searchInput");
+        const exerciseList = document.getElementById("exerciseList");
 
-        function createExerciseDiv(container) {
-            let newExerciseDiv = document.createElement("div");
+        searchInput.addEventListener("input", filterExercises)
+        muscleGroupSelectList.addEventListener("change", filterExercises);
+
+        function createExerciseDiv(container, id, name) {
+            const newExerciseDiv = document.createElement("div");
             newExerciseDiv.id = `exercise.${exerciseIndex}`;
             newExerciseDiv.classList.add("exerciseDiv", "p-3", "mb-4", "card", "border-0");
             newExerciseDiv.innerHTML = `
                 <div class="form-group">
                     <div class="d-flex gap-2 mb-3 align-items-center">
                         <select name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
-                            @foreach (var exercise in Model.ExerciseSelectList)
-                            {
-                                            <option value="@exercise.Value">@exercise.Text</option>
-                            }
+                            <option readonly value="${id}">${name}</option>
                         </select>
                         <button type="button" class="btn-close removeExerciseBtn"></button>
                     </div>
@@ -84,29 +126,31 @@
             exerciseIndex++;
         }
 
-        addExerciseBtn.addEventListener("click", () => {
-            createExerciseDiv(exerciseContainer);
+        exerciseList.addEventListener("click", (e) => {
+                if (e.target.closest(".exercise-selection-div")) {
+                const selectedExerciseDiv = e.target.closest(".exercise-selection-div");
+               
+                const id = selectedExerciseDiv.id;
+                const name = selectedExerciseDiv.dataset.exerciseName;
+                createExerciseDiv(exerciseContainer, id, name);
+            }
         })
 
         exerciseContainer.addEventListener("click", (e) => {
             if (e.target.closest(".removeSetBtn")) {
-                let setRow = e.target.closest(".setRow");
-                let setContainer = setRow.parentElement;
+                const setRow = e.target.closest(".setRow");
+                const setContainer = setRow.parentElement;
                 setContainer.removeChild(setRow);
                 renumberSets();
             } if (e.target.closest(".addSetBtn")) {
-                let exerciseDiv = e.target.closest(".exerciseDiv");
-                let exIndex = parseInt(exerciseDiv.id.split(".")[1]);
+                const exerciseDiv = e.target.closest(".exerciseDiv");
+                const exIndex = parseInt(exerciseDiv.id.split(".")[1]);
                 createSetDiv(exerciseDiv, exIndex);
             } if (e.target.closest(".removeExerciseBtn")) {
-                let exerciseDiv = e.target.closest(".exerciseDiv");
+                const exerciseDiv = e.target.closest(".exerciseDiv");
                 exerciseContainer.removeChild(exerciseDiv);
                 renumberExerciseIndex();
             }
-        });
-
-        window.addEventListener("load", (e) => {
-            createExerciseDiv(exerciseContainer);
         });
     </script>
 }

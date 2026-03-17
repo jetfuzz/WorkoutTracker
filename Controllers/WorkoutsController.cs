@@ -89,7 +89,8 @@ namespace WorkoutTracker.Controllers
         public IActionResult Create()
         {
             WorkoutFormVM vm = new WorkoutFormVM();
-            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+            vm.AllExercises = _context.Exercises.Include(e => e.MuscleGroup).ToList();
+            vm.MuscleGroups = _context.MuscleGroups.ToList();
             return View(vm);
         }
 
@@ -106,7 +107,6 @@ namespace WorkoutTracker.Controllers
                 Workout workout = new Workout();
 
                 //map the properties from the workout to the workout object
-                //workout.UserId = (get user id based on the current logged in user)
                 workout.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
                 workout.Name = vm.Name;
                 workout.Date = vm.Date;
@@ -147,7 +147,8 @@ namespace WorkoutTracker.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             WorkoutFormVM vm = new WorkoutFormVM();
-            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+            vm.AllExercises = _context.Exercises.Include(e => e.MuscleGroup).ToList();
+            vm.MuscleGroups = _context.MuscleGroups.ToList();
 
             if (id == null)
             {
@@ -229,7 +230,8 @@ namespace WorkoutTracker.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            vm.ExerciseSelectList = new SelectList(_context.Exercises, "Id", "Name");
+            vm.AllExercises = _context.Exercises.Include(e => e.MuscleGroup).ToList();
+            vm.MuscleGroups = _context.MuscleGroups.ToList();
             return View(vm);
         }
 
