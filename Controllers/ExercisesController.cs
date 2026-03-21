@@ -51,6 +51,7 @@ namespace WorkoutTracker.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             vm.WorkoutData = await _context.WorkoutExercises
                 .Where(we => we.ExerciseId == id)
                 .Include(we => we.Workout)
@@ -60,6 +61,7 @@ namespace WorkoutTracker.Controllers
                     Date = we.Workout.Date,
                     HighestWeight = we.Sets.Max(s => s.Weight)
                 })
+                .OrderBy(w => w.Date)
                 .ToListAsync();
 
             return View(vm);
