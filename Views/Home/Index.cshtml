@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -10,7 +11,7 @@
         </p>
 
         <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-            <a asp-area="Identity" asp-action="Index" class="btn btn-outline-dark px-4">Join Us!</a>
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-dark px-4">Join Us</a>
             <a asp-controller="Workouts" asp-action="Create" class="btn btn-dark px-4">Start Workout</a>
         </div>
     </div>
@@ -25,13 +26,11 @@
             </div>
 
             <div class="col-md-7">
-                <div class="card shadow-sm border-0 h-100 p-3">
-                    <h5 class="fw-bold">Progress Over Time</h5>
-                    <small class="text-muted d-block mb-3">Weight Lifted</small>
+                <div class="card shadow-sm border-0 h-100 p-3" style="background-color:#111827; border-radius:18px;">
+                    <h5 class="fw-bold text-white">Reps Progress</h5>
+                    <small class="text-light d-block mb-3">Reps by workout date</small>
 
-                    <div class="d-flex align-items-center justify-content-center" style="height: 300px;">
-                        <span class="text-muted">Chart goes here</span>
-                    </div>
+                    <canvas id="myChart" class="mb-4"></canvas>
                 </div>
             </div>
         </div>
@@ -49,7 +48,7 @@
 
             <div class="col-md-7">
                 <div class="card shadow-sm border-0 p-3 d-flex flex-row gap-3 align-items-start">
-                    <div class="bg-light rounded" style="width: 50px; height: 50px;"></div>
+                    <div class="bg-light rounded" style="width:50px; height:50px;"></div>
                     <div>
                         <h5 class="fw-bold">How to Log Your Workouts</h5>
                         <p class="text-muted mb-0">
@@ -61,3 +60,43 @@
         </div>
     </div>
 </section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let ctx = document.getElementById("myChart");
+
+        const repLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RepLabels ?? new List<string>()));
+        const repData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RepData ?? new List<int>()));
+
+        new Chart(ctx , {
+            type: 'line',
+            data: {
+                labels: repLabels,
+                datasets: [{
+                    label: 'Reps',
+                    data: repData,
+                    borderWidth: 2,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 7
+                        }
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}
