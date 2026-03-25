@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,29 +24,50 @@ namespace WorkoutTracker.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var workouts = new List<Workout>();
+            var recentWorkout = new List<Workout>();
 
             if (!string.IsNullOrEmpty(userId))
             {
+                //workout data for chart. filters workouts within the last 3 months
                 workouts = await _context.Workouts
+                    .Where(w => w.UserId == userId &&
+                                w.Date >= DateTime.Now.AddMonths(-3) &&
+                                w.WorkoutExercises
+                                    .SelectMany(we => we.Sets)
+                                    .Sum(s => s.Repetitions) > 0)
+                    .Include(w => w.WorkoutExercises)
+                        .ThenInclude(we => we.Sets)
+                    .Include(w => w.WorkoutExercises)        
+                        .ThenInclude(we => we.Exercise)
+                    .OrderBy(w => w.Date)
+                    .ToListAsync();
+
+                //data for recent workout div
+                recentWorkout = await _context.Workouts
                     .Where(w => w.UserId == userId)
                     .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Sets)
-                    .OrderBy(w => w.Date)
+                    .Include(w => w.WorkoutExercises)        
+                        .ThenInclude(we => we.Exercise)
+                    .OrderByDescending(w => w.Date)
+                    .Take(1)
                     .ToListAsync();
             }
 
-
+            //workout sum of reps for each week
             ViewBag.RepLabels = workouts
-                .Select(w => w.Date.ToString("MMM dd"))
+                .GroupBy(w => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(w.Date, CalendarWeekRule.FirstDay, DayOfWeek.Monday))
+                .Select(g => g.First().Date.ToString("MMM dd"))
                 .ToList();
 
             ViewBag.RepData = workouts
-                .Select(w => w.WorkoutExercises
+                .GroupBy(w => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(w.Date, CalendarWeekRule.FirstDay, DayOfWeek.Monday))
+                .Select(g => g.SelectMany(w => w.WorkoutExercises)
                     .SelectMany(we => we.Sets)
                     .Sum(s => s.Repetitions))
                 .ToList();
 
-            return View();
+            return View(recentWorkout);
         }
 
         public IActionResult Privacy()
