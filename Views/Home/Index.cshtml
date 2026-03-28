@@ -1,4 +1,6 @@
-﻿
+﻿@using System.Security.Claims
+@model IEnumerable<WorkoutTracker.Models.Workout>
+
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -10,56 +12,153 @@
             Log exercises, track your sets, reps, and weights fast and easy.
         </p>
 
-        <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-dark px-4">Join Us</a>
-            <a asp-controller="Workouts" asp-action="Create" class="btn btn-dark px-4">Start Workout</a>
-        </div>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <a asp-controller="Workouts" asp-action="Create" class="btn btn-dark px-4">Start Workout</a>
+            </div>
+        } else
+        {
+            <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-dark px-4">Join Us</a>
+            </div>
+        }
     </div>
 </section>
 
 <section class="py-5">
     <div class="container">
-        <div class="row align-items-center g-4">
-            <div class="col-md-5">
-                <h2 class="fw-bold">Exercise Progression</h2>
-                <p class="text-muted">Monitor your growth over time.</p>
-            </div>
+            @if (User.Identity.IsAuthenticated) 
+            {
+                <div class="row g-5">
+                    <div class="col-md-5 card shadow-sm border-0 p-4" style="border-radius:18px;">
+                        <h4 class="fw-bold">Recent Activity</h4>
+                        @foreach (var workout in Model)
+                        {
+                            <div class=" m-3 border-0 rounded-3">
+                                @* <a asp-controller="Workouts" asp-action="Details" asp-route-id="@workout.Id" class="stretched-link"></a> *@
+                                <p class="fw-bold fs-5 mb-1">@workout.Name</p>
+                                <p class="text-muted small mb-2">@workout.Date.ToString("MMMM dd, yyyy")</p>
 
-            <div class="col-md-7">
-                <div class="card shadow-sm border-0 h-100 p-3" style="background-color:#111827; border-radius:18px;">
-                    <h5 class="fw-bold text-white">Reps Progress</h5>
-                    <small class="text-light d-block mb-3">Reps by workout date</small>
+                                <div class="d-flex">
+                                    <div class="me-4">
+                                        <p class="text-muted small mb-0">Volume</p>
+                                        @{
+                                            var workoutVolume = 0;
+                                            foreach (var workoutExercise in workout.WorkoutExercises)
+                                            {
+                                                foreach (var set in workoutExercise.Sets)
+                                                {
+                                                    workoutVolume += (int)(set.Repetitions * set.Weight);
+                                                }
+                                            }
+                                        }
+                                        <p class="mb-1">@workoutVolume lbs</p>
+                                    </div>
 
-                    <canvas id="myChart" class="mb-4"></canvas>
+                                    <div>
+                                        <p class="text-muted small mb-0">Sets</p>
+                                        @{
+                                            var setCount = 0;
+                                            @foreach (var workoutExercise in workout.WorkoutExercises)
+                                            {
+                                                setCount += workoutExercise.Sets.Count();
+                                            }
+                                        }
+                                        <p class="mb-1">@setCount</p>
+                                    </div>
+                                </div>
+                                <hr class="text-secondary" />
+
+                                @* only display first 3 exercises for workout  *@
+                                @if (workout.WorkoutExercises.Count() > 3)
+                                {
+                                    @foreach (var workoutExercise in workout.WorkoutExercises.Take(3))
+                                    {
+                                        <p>@workoutExercise.Sets.Count sets @workoutExercise.Exercise.Name</p>
+                                    }
+                                    <p class="text-secondary small">see @(workout.WorkoutExercises.Count() - 3) more exercises</p>
+                                }
+                                else
+                                {
+                                    @foreach (var workoutExercise in workout.WorkoutExercises)
+                                    {
+                                        <p>@workoutExercise.Sets.Count sets @workoutExercise.Exercise.Name</p>
+                                    }
+                                }
+                            </div>
+                            <a asp-controller="Workouts" asp-action="Index" class="btn btn-dark px-4">See All Recent Workouts</a>
+
+                        }
+                    </div>
+                
+                    <div class="col-md-7">
+                        <div class="card shadow-sm border-0 h-100 p-3" style="border-radius:18px;">
+                            <h4 class="fw-bold">Reps Progress</h4>
+                            <small class="d-block text-muted mb-3">Total reps per week</small>
+
+                            <canvas id="myChart" class="mb-4"></canvas>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            } 
+            else
+            {
+                <div class="row">
+                <div class="row g-4" style="margin-top: 60px;margin-bottom: 60px">
+                        <div class="col-md-4">
+                            <h2 class="fw-bold"><i class="bi bi-heart-pulse pe-3"></i>Log Workouts</h2>
+                            <p class="text-muted">Track sets, reps, and weight on any exercise.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h2 class="fw-bold"><i class="bi bi-person-badge pe-3"></i>View History</h2>
+                            <p class="text-muted">See past workouts with personal record badges.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h2 class="fw-bold"><i class="bi bi-activity pe-3"></i>Track Progress</h2>
+                            <p class="text-muted">Monitor your growth over time with progress charts.</p>
+                        </div>
+                    </div>
+                </div>
+            }
     </div>
 </section>
 
-<section class="py-5">
-    <div class="container">
-        <div class="row align-items-center g-4">
-            <div class="col-md-5">
-                <h2 class="fw-bold">Log Your Workouts</h2>
-                <p class="text-muted">Easily log exercises with sets, reps, and weights.</p>
-                <a asp-controller="Workouts" asp-action="Create" class="btn btn-dark mt-2">Log New Workout</a>
-            </div>
+@if (User.Identity.IsAuthenticated)
+{
+    <section class="py-5">
+        <div class="container">
+            <div class="row align-items-center g-4">
+                <div class="col-md-5">
+                    <h2 class="fw-bold">Log Your Workouts</h2>
+                    <p class="text-muted">Easily log exercises with sets, reps, and weights.</p>
+                    <a asp-controller="Workouts" asp-action="Create" class="btn btn-dark mt-2">Log New Workout</a>
+                </div>
 
-            <div class="col-md-7">
-                <div class="card shadow-sm border-0 p-3 d-flex flex-row gap-3 align-items-start">
-                    <div class="bg-light rounded" style="width:50px; height:50px;"></div>
-                    <div>
-                        <h5 class="fw-bold">How to Log Your Workouts</h5>
-                        <p class="text-muted mb-0">
-                            Select your exercise, input sets, reps, and weight to keep track of your progress.
-                        </p>
+                <div class="col-md-7">
+                    <div class="card shadow-sm border-0 p-3 d-flex flex-row gap-3 align-items-start">
+                        <svg version="1.1" id="Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve" width="64px" height="64px" fill="#000000" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-background-000000, #000000);"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .st0 {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           fill: none;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           stroke: #000000;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           stroke-width: 2;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           stroke-linecap: round;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           stroke-linejoin: round;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           stroke-miterlimit: 10;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       }
+    </style><style class="darkreader darkreader--sync" media="screen"></style> <g> <path d="M24,7c0-0.1,0-0.1,0-0.2l-0.7-4.3C23,1.1,21.8,0,20.3,0h-8.6c-1.5,0-2.7,1.1-3,2.5L8,6.8C8,6.9,8,6.9,8,7 c-1.2,0.9-2,2.4-2,4v10c0,1.6,0.8,3.1,2,4c0,0.1,0,0.1,0,0.2l0.7,4.3c0.2,1.5,1.5,2.5,3,2.5h8.6c1.5,0,2.7-1.1,3-2.5l0.7-4.3 c0-0.1,0-0.1,0-0.2c1.2-0.9,2-2.4,2-4V11C26,9.4,25.2,7.9,24,7z M24,21c0,1.7-1.3,3-3,3H11c-1.7,0-3-1.3-3-3V11c0-1.7,1.3-3,3-3h10 c1.7,0,3,1.3,3,3V21z"></path> <path d="M21,15h-1.4l-1.7-3.4C17.7,11.2,17.4,11,17,11c-0.4,0-0.7,0.2-0.9,0.6L13.3,18H11c-0.6,0-1,0.4-1,1s0.4,1,1,1h3 c0.4,0,0.8-0.2,0.9-0.6l2.2-5l1,2.1c0.2,0.3,0.5,0.6,0.9,0.6h2c0.6,0,1-0.4,1-1S21.6,15,21,15z"></path> </g> </g></svg>
+                        <div>
+                            <h5 class="fw-bold">How to Log Your Workouts</h5>
+                            <p class="text-muted mb-0">
+                                Select your exercise, input sets, reps, and weight to keep track of your progress.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+}
 
 @section Scripts {
     @{
@@ -74,7 +173,7 @@
         const repData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RepData ?? new List<int>()));
 
         new Chart(ctx , {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: repLabels,
                 datasets: [{
