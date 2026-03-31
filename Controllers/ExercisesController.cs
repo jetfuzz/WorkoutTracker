@@ -1,15 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using WorkoutTracker.Data;
 using WorkoutTracker.Models;
 
 namespace WorkoutTracker.Controllers
 {
+    [Authorize]
     public class ExercisesController : Controller
     {
         private readonly WorkoutTrackerContext _context;
@@ -47,14 +50,18 @@ namespace WorkoutTracker.Controllers
                 return NotFound();
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             vm.WorkoutData = await _context.WorkoutExercises
                 .Where(we => we.ExerciseId == id)
                 .Include(we => we.Workout)
+                .Where(we => we.Workout.UserId == userId) 
                 .Select(we => new WorkoutVM
                 {
                     Date = we.Workout.Date,
                     HighestWeight = we.Sets.Max(s => s.Weight)
                 })
+                .OrderBy(w => w.Date)
                 .ToListAsync();
 
             return View(vm);

@@ -18,8 +18,10 @@
 
             <div class="card pt-4 px-4 border-0  mb-4">
                 <h3 class="fw-bold fs-4 mb-3">Statistics</h3>
-                <select class="form-control">
-                    <option value="value">All Time</option>
+                <select class="form-control" id="dateSelect">
+                    <option value="all">All time</option>
+                    <option value="year">Year</option>
+                    <option value="threeMonths">Last 3 months</option>
                 </select>
 
                 <canvas id="myChart" class="mb-4"></canvas>
@@ -38,33 +40,66 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let ctx = document.getElementById("myChart");
-        const workoutData = @Json.Serialize(Model.WorkoutData)
-        console.log(workoutData)
+        let workoutData = @Json.Serialize(Model.WorkoutData)
+        const dateSelect = document.getElementById("dateSelect");
 
-        new Chart(ctx , {
+        if (workoutData.length === 0) {
+            ctx.parentNode.innerHTML = "<p class='text-center text-secondary'>No workout data available for this exercise.</p>";
+        }
+
+        let workoutChart = new Chart(ctx , {
             type: 'line',
             data: {
-            labels: workoutData.map(item => new Date(item.date).toLocaleDateString("en-US", 
-                {year: "numeric", month: "short", day: "numeric"})),
-            datasets: [{
-                label: 'Heaviest Weight',
-                data: workoutData.map(item => item.highestWeight),
-                borderWidth: 1
-            }]
+                labels: workoutData.map(item => new Date(item.date).toLocaleDateString("en-US",
+                    {year: "numeric", month: "short", day: "numeric"})),
+                datasets: [{
+                    label: 'Heaviest Weight',
+                    data: workoutData.map(item => item.highestWeight),
+                    borderWidth: 1
+                }]
             },
             options: {
-            scales: {
-                x: {
-                    ticks: {
-                        autoSkip: true,
-                        maxTicksLimit: 7
+                scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 7
+                        }
+                    },
+                    y: {
+                    beginAtZero: false
                     }
-                },
-                y: {
-                beginAtZero: false
                 }
             }
+        });
+
+        function updateChart(filteredData) {
+            workoutChart.data.labels = filteredData.map(item => new Date(item.date).toLocaleDateString("en-US",
+                {year: "numeric", month: "short", day: "numeric"}));
+
+            workoutChart.data.datasets[0].data = filteredData.map(item => item.highestWeight);
+
+            workoutChart.update();
+        }
+
+        function filterData(data) {
+            const now = new Date();
+            let filteredData = workoutData;
+            if (dateSelect.value === "threeMonths") {
+                const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                filteredData = workoutData.filter(item => new Date(item.date) >= threeMonthsAgo);
+            } else if (dateSelect.value === "year") {
+                const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                filteredData = workoutData.filter(item => new Date(item.date) >= oneYearAgo);
+            } else if (dateSelect.value === "all") {
+                filteredData = workoutData;
             }
+            return filteredData;
+        }
+
+        dateSelect.addEventListener("change", () => {
+            let filteredData = filterData(workoutData);
+            updateChart(filteredData);
         });
     </script>
 }
