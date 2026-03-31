@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-
-namespace WorkoutTracker.Models
+﻿namespace WorkoutTracker.Models
 {
     public class WorkoutFormVM
     {

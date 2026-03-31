@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using WorkoutTracker.Data;
 using WorkoutTracker.Models;
 
@@ -44,7 +39,7 @@ namespace WorkoutTracker.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var workout = await _context.Workouts
-                .Include(w => w.WorkoutExercises) 
+                .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Exercise)
                 .Include(w => w.WorkoutExercises)
                     .ThenInclude(we => we.Sets)
@@ -154,8 +149,8 @@ namespace WorkoutTracker.Controllers
             {
                 return NotFound();
             }
-            
-            
+
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var workout = await _context.Workouts
                 .Include(w => w.WorkoutExercises)

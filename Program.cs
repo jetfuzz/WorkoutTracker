@@ -1,6 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Data;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WorkoutTrackerContext>(options =>

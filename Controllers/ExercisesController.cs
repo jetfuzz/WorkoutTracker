@@ -2,11 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using WorkoutTracker.Data;
 using WorkoutTracker.Models;
 
@@ -55,7 +51,7 @@ namespace WorkoutTracker.Controllers
             vm.WorkoutData = await _context.WorkoutExercises
                 .Where(we => we.ExerciseId == id)
                 .Include(we => we.Workout)
-                .Where(we => we.Workout.UserId == userId) 
+                .Where(we => we.Workout.UserId == userId)
                 .Select(we => new WorkoutVM
                 {
                     Date = we.Workout.Date,

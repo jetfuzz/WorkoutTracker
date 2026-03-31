@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Models;
 
 namespace WorkoutTracker.Data
 {
     public class WorkoutTrackerContext : DbContext
     {
-        public WorkoutTrackerContext (DbContextOptions<WorkoutTrackerContext> options)
+        public WorkoutTrackerContext(DbContextOptions<WorkoutTrackerContext> options)
             : base(options)
         {
         }
