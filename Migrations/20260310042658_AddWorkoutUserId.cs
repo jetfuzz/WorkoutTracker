@@ -9,7 +9,7 @@ namespace WorkoutTracker.Migrations
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
-        {   
+        {
             migrationBuilder.AddColumn<string>(
                 name: "UserId",
                 table: "Workouts",

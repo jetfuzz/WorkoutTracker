@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Data;
 using WorkoutTracker.Models;
 
@@ -37,7 +37,7 @@ namespace WorkoutTracker.Controllers
                                     .Sum(s => s.Repetitions) > 0)
                     .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Sets)
-                    .Include(w => w.WorkoutExercises)        
+                    .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Exercise)
                     .OrderBy(w => w.Date)
                     .ToListAsync();
@@ -47,7 +47,7 @@ namespace WorkoutTracker.Controllers
                     .Where(w => w.UserId == userId)
                     .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Sets)
-                    .Include(w => w.WorkoutExercises)        
+                    .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Exercise)
                     .OrderByDescending(w => w.Date)
                     .Take(1)
