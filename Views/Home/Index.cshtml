@@ -15,12 +15,12 @@
         @if (User.Identity.IsAuthenticated)
         {
             <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-                <a asp-controller="Workouts" asp-action="Create" class="btn btn-dark px-4">Start Workout</a>
+                <a asp-controller="Workouts" asp-action="Create" class="btn btn-primary px-4">Start Workout</a>
             </div>
         } else
         {
             <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-dark px-4">Join Us</a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary px-4">Join Us</a>
             </div>
         }
     </div>
@@ -31,7 +31,7 @@
             @if (User.Identity.IsAuthenticated) 
             {
                 <div class="row g-5">
-                    <div class="col-md-5 card shadow-sm border-0 p-4" style="border-radius:18px;">
+                <div class="col-md-5 card shadow-sm border-light-subtle p-4" style="border-radius:18px;">
                         <h4 class="fw-bold">Recent Activity</h4>
                         @foreach (var workout in Model)
                         {
@@ -93,7 +93,7 @@
                     </div>
                 
                     <div class="col-md-7">
-                        <div class="card shadow-sm border-0 h-100 p-3" style="border-radius:18px;">
+                    <div class="card shadow-sm border-light-subtle h-100 p-3" style="border-radius:18px;">
                             <h4 class="fw-bold">Reps Progress</h4>
                             <small class="d-block text-muted mb-3">Total reps per week</small>
 
@@ -136,7 +136,7 @@
                 </div>
 
                 <div class="col-md-7">
-                    <div class="card shadow-sm border-0 p-3 d-flex flex-row gap-3 align-items-start">
+                    <div class="card shadow-sm border-light-subtle p-3 d-flex flex-row gap-3 align-items-start">
                         <svg version="1.1" id="Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve" width="64px" height="64px" fill="#000000" data-darkreader-inline-fill="" style="--darkreader-inline-fill: var(--darkreader-background-000000, #000000);"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css">
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        .st0 {
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            fill: none;
@@ -179,6 +179,7 @@
                 datasets: [{
                     label: 'Reps',
                     data: repData,
+                    borderRadius: 12,
                     borderWidth: 2,
                     tension: 0.3
                 }]

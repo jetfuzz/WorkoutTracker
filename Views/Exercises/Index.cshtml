@@ -30,7 +30,7 @@
                 <input class="form-control mr-sm-2 border-0 shadow-none" type="search" placeholder="Search Exercises" aria-label="Search" id="searchInput" style="background-color: #e2e5e9;">
             </div>
 
-            <div class="card overflow-auto" style="max-height: 650px;">
+            <div class="card overflow-auto border-light-subtle" style="max-height: 650px;">
                 @foreach (var exercise in Model.Exercises)
                 {
                     <div class="position-relative p-2 rounded-3 exercise-selection-div" data-mg-id="@exercise.MuscleGroup.Id">

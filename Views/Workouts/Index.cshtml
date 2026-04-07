@@ -15,7 +15,7 @@
 
             @foreach (var workout in Model)
             {
-                <div class="card px-4 pt-4 m-3 border-0 rounded-3">
+                <div class="card px-4 pt-4 border-light-subtle m-3 rounded-3">
                     <a asp-action="Details" asp-route-id="@workout.Id" class="stretched-link"></a>
                     <p class="fw-bold fs-5 mb-1">@workout.Name</p>
                     <p class="text-muted small mb-2">@workout.Date.ToString("MMMM dd, yyyy")</p>
