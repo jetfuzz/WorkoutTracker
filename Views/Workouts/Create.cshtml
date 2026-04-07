@@ -99,7 +99,7 @@
         function createExerciseDiv(container, id, name) {
             const newExerciseDiv = document.createElement("div");
             newExerciseDiv.id = `exercise.${exerciseIndex}`;
-            newExerciseDiv.classList.add("exerciseDiv", "p-3", "mb-4", "card", "border-0");
+            newExerciseDiv.classList.add("exerciseDiv", "p-3", "mb-4", "card", "border-light-subtle");
             newExerciseDiv.innerHTML = `
                 <div class="form-group">
                     <div class="d-flex gap-2 mb-3 align-items-center">
@@ -118,7 +118,7 @@
                         <div class="col-2"></div>
                     </div>
                 </div>
-                <button type="button" class="btn w-100 addSetBtn">+ Add Set</button>
+                <button type="button" class="btn  btn-secondary w-100 addSetBtn">+ Add Set</button>
             `;
             container.appendChild(newExerciseDiv);
 

@@ -33,14 +33,67 @@ body {
   text-align: start;
 }
 
-/* exercise page*/
+/* general styling */
 
-.modal-body {
-    height: 85vh;
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0f0f0;
+    --text-primary: #111111;
+    --text-secondary: #767676;
+    --accent: #007ee6;
+    --button-gray: #efefef;
+    --border-radius-md: 16px;
 }
 
-.exercise-selection-div:hover {
-    background-color: #f8f9fa;
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.btn {
+    border-radius: var(--border-radius-md) !important;
+    font-weight: 600;
+    border: none;
+    padding: 8px 18px;
+}
+
+.btn-primary {
+    background-color: var(--accent) !important;
+    color: var(--bg-primary) !important;
+}
+
+.btn-dark, .btn-secondary {
+    background-color: var(--button-gray) !important;
+    color: var(--text-primary) !important;
+}
+
+.form-control:focus {
+    border-color: #cdcdcd !important;
+    box-shadow: none !important;
+}
+
+.navbar {
+    background-color: var(--bg-primary) !important;
+    box-shadow: none !important;
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-weight: 800;
+}
+
+h1 {
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+/* exercise page*/
+.modal-body {
+    height: 85vh;
 }
 
 .exercise-selection-div:hover {
