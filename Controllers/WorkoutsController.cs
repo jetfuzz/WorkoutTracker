@@ -98,41 +98,38 @@ namespace WorkoutTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                //create a new workout object
-                Workout workout = new Workout();
+                //refactor to avoid nested saveChangesAsync
 
-                //map the properties from the workout to the workout object
-                workout.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-                workout.Name = vm.Name;
-                workout.Date = vm.Date;
-                _context.Add(workout);
-                await _context.SaveChangesAsync();
+                Workout workout = new Workout
+                {
+                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                    Name = vm.Name,
+                    Date = vm.Date,
+                    WorkoutExercises = new List<WorkoutExercise>()
+                };
 
-                //now workoutId exists, loop through the exercises in the view model and create workout exercise objects
                 foreach (var exercise in vm.Exercises)
                 {
-                    WorkoutExercise workoutExercise = new WorkoutExercise();
-                    workoutExercise.WorkoutId = workout.Id;
-                    workoutExercise.ExerciseId = exercise.ExerciseId;
-                    workout.WorkoutExercises.Add(workoutExercise);
-                    //add the workout exercise to the context so we can get the id for the sets
-                    _context.Add(workoutExercise);
-                    await _context.SaveChangesAsync();
-                    //loop through the sets for each exercise and create set objects
+                    WorkoutExercise workoutExercise = new WorkoutExercise
+                    {
+                        ExerciseId = exercise.ExerciseId,
+                        Sets = new List<Set>()
+                    };
                     foreach (var set in exercise.Sets)
                     {
-                        Set workoutSet = new Set();
-                        workoutSet.WorkoutExerciseId = workoutExercise.Id;
-                        workoutSet.Repetitions = set.Repetitions;
-                        workoutSet.Weight = set.Weight;
-                        workoutSet.SetNumber = set.SetNumber;
+                        Set workoutSet = new Set
+                        {
+                            Repetitions = set.Repetitions,
+                            Weight = set.Weight,
+                            SetNumber = set.SetNumber
+                        };
                         workoutExercise.Sets.Add(workoutSet);
-                        //finally, add the set to the context
-                        _context.Add(workoutSet);
-                        await _context.SaveChangesAsync();
                     }
+                    workout.WorkoutExercises.Add(workoutExercise);
                 }
 
+                _context.Add(workout);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(vm);
