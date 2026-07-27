@@ -35,7 +35,6 @@ namespace WorkoutTracker.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var workout = await _context.Workouts
@@ -68,12 +67,15 @@ namespace WorkoutTracker.Controllers
                 }).ToList();
             }
 
+            var bestWeights = await _context.Set
+                .Where(s => s.WorkoutExercise.Workout.UserId == userId)
+                .GroupBy(s => s.WorkoutExercise.ExerciseId)
+                .Select(g => new { ExerciseId = g.Key, BestWeight = g.Max(x => x.Weight) })
+                .ToDictionaryAsync(x => x.ExerciseId, x => x.BestWeight);
+
             foreach (var exercise in vm.Exercises)
             {
-                var bestWeight = _context.Set
-                    .Where(s => s.WorkoutExercise.ExerciseId == exercise.ExerciseId && s.WorkoutExercise.Workout.UserId == userId)
-                    .OrderByDescending(s => s.Weight)
-                    .FirstOrDefault()?.Weight ?? 0;
+                var bestWeight = bestWeights.GetValueOrDefault(exercise.ExerciseId, 0);
                 exercise.isBestWeight = exercise.Sets.Any(s => s.Weight >= bestWeight);
             }
 
@@ -98,8 +100,6 @@ namespace WorkoutTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                //refactor to avoid nested saveChangesAsync
-
                 Workout workout = new Workout
                 {
                     UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
