@@ -35,7 +35,6 @@ namespace WorkoutTracker.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var workout = await _context.Workouts
@@ -68,12 +67,15 @@ namespace WorkoutTracker.Controllers
                 }).ToList();
             }
 
+            var bestWeights = await _context.Set
+                .Where(s => s.WorkoutExercise.Workout.UserId == userId)
+                .GroupBy(s => s.WorkoutExercise.ExerciseId)
+                .Select(g => new { ExerciseId = g.Key, BestWeight = g.Max(x => x.Weight) })
+                .ToDictionaryAsync(x => x.ExerciseId, x => x.BestWeight);
+
             foreach (var exercise in vm.Exercises)
             {
-                var bestWeight = _context.Set
-                    .Where(s => s.WorkoutExercise.ExerciseId == exercise.ExerciseId && s.WorkoutExercise.Workout.UserId == userId)
-                    .OrderByDescending(s => s.Weight)
-                    .FirstOrDefault()?.Weight ?? 0;
+                var bestWeight = bestWeights.GetValueOrDefault(exercise.ExerciseId, 0);
                 exercise.isBestWeight = exercise.Sets.Any(s => s.Weight >= bestWeight);
             }
 
@@ -98,8 +100,6 @@ namespace WorkoutTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                //refactor to avoid nested saveChangesAsync
-
                 Workout workout = new Workout
                 {
                     UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
@@ -203,10 +203,77 @@ namespace WorkoutTracker.Controllers
                     .Include(w => w.WorkoutExercises)
                         .ThenInclude(we => we.Sets)
                     .FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+                if (workout == null) return NotFound();
+
                 try
                 {
                     workout.Date = vm.Date;
                     workout.Name = vm.Name;
+
+                    var exercisesToRemove = workout.WorkoutExercises
+                        .Where(we => !vm.Exercises.Any(e => e.Id == we.Id))
+                        .ToList();
+                    
+                    _context.WorkoutExercises.RemoveRange(exercisesToRemove);
+
+                    // Update existing exercises and sets, and add new ones
+                    foreach (var exerciseVM in vm.Exercises)
+                    {
+                        var existingExercise = workout.WorkoutExercises
+                            .FirstOrDefault(we => we.Id == exerciseVM.Id);
+                        if (existingExercise != null)
+                        {
+                            // Update existing exercise
+                            existingExercise.ExerciseId = exerciseVM.ExerciseId;
+                            // Remove deleted sets
+                            var setsToRemove = existingExercise.Sets
+                                .Where(s => !exerciseVM.Sets.Any(svm => svm.Id == s.Id))
+                                .ToList();
+                            _context.Set.RemoveRange(setsToRemove);
+                            // Update existing sets and add new ones
+                            foreach (var setVM in exerciseVM.Sets)
+                            {
+                                var existingSet = existingExercise.Sets
+                                    .FirstOrDefault(s => s.Id == setVM.Id);
+                                if (existingSet != null)
+                                {
+                                    // Update existing set
+                                    existingSet.Repetitions = setVM.Repetitions;
+                                    existingSet.Weight = setVM.Weight;
+                                    existingSet.SetNumber = setVM.SetNumber;
+                                }
+                                else
+                                {
+                                    // Add new set
+                                    Set newSet = new Set
+                                    {
+                                        Repetitions = setVM.Repetitions,
+                                        Weight = setVM.Weight,
+                                        SetNumber = setVM.SetNumber,
+                                        WorkoutExerciseId = existingExercise.Id
+                                    };
+                                    _context.Set.Add(newSet);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Add new exercise and its sets
+                            WorkoutExercise newWorkoutExercise = new WorkoutExercise
+                            {
+                                ExerciseId = exerciseVM.ExerciseId,
+                                WorkoutId = workout.Id,
+                                Sets = exerciseVM.Sets.Select(svm => new Set
+                                {
+                                    Repetitions = svm.Repetitions,
+                                    Weight = svm.Weight,
+                                    SetNumber = svm.SetNumber
+                                }).ToList()
+                            };
+                            _context.WorkoutExercises.Add(newWorkoutExercise);
+                        }
+                    }
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

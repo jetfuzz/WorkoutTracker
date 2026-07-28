@@ -35,7 +35,7 @@
                             <input type="hidden" name="Exercises[${exerciseIndex}].Id" value="@exercise.Id" />
                             <div class="form-group">
                                 <div class="d-flex gap-2 mb-3 align-items-center">
-                                    <select disabled name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
+                                    <select name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
                                             @foreach (var exerciseOption in Model.AllExercises)
                                             {
                                                 if (exerciseOption.Id == exercise.ExerciseId)
@@ -48,7 +48,7 @@
                                                 }
                                         }
                                     </select>
-                                    <button disabled type="button" class="btn-close removeExerciseBtn"></button>
+                                    <button type="button" class="btn-close removeExerciseBtn"></button>
                                 </div>
                             </div>
 
@@ -62,11 +62,10 @@
                                 @foreach (var set in exercise.Sets)
                                 {
                                     <div class="setRow mb-2 align-items-center">
-                                        <input type="hidden" name="Exercises[${exerciseIndex}].Sets[${set.SetNumber -1}].Id" />
+                                        <input type="hidden" name="Exercises[${exerciseIndex}].Sets[${set.SetNumber -1}].Id" value="@set.Id" />
                                         <div class="row justify-content-center align-items-center">
                                             <div class="col-2">
                                                 <input type="number"
-                                                    disabled
                                                     name="Exercises[${exerciseIndex}].Sets[${set.SetNumber - 1}].SetNumber"
                                                     value="@set.SetNumber"
                                                     class="form-control form-control-sm text-center fw-bold"
@@ -74,7 +73,6 @@
                                             </div>
                                             <div class="col-4">
                                                 <input type="number"
-                                                    disabled
                                                     name="Exercises[${exerciseIndex}].Sets[${set.SetNumber - 1}].Weight"
                                                     value="@set.Weight"
                                                     class="form-control form-control-sm text-center"
@@ -82,26 +80,25 @@
                                             </div>
                                             <div class="col-4">
                                                 <input type="number"
-                                                    disabled
                                                     name="Exercises[${exerciseIndex}].Sets[${set.SetNumber - 1}].Repetitions"
                                                     value="@set.Repetitions"
                                                     class="form-control form-control-sm text-center"
                                                     min="1"/>
                                             </div>
                                             <div class="col-2">
-                                                <button disabled type="button" class="btn-close removeSetBtn"></button>
+                                                <button type="button" class="btn-close removeSetBtn"></button>
                                             </div>
                                         </div>
                                     </div>
                                 }
                             </div>
-                            <button disabled type="button" class="btn w-100 addSetBtn border-0">+ Add Set</button>
+                            <button type="button" class="btn w-100 addSetBtn border-0">+ Add Set</button>
                         </div>
                     }
                 </div>
 
                 <div class="form-group">
-                    <button disabled type="button" id="addExerciseBtn" class="btn btn-primary w-100">+ Add Exercise</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#exerciseModal" class="btn btn-primary w-100">+ Add Exercise</button>
                 </div>
                 <hr />
                 <div class="form-group d-flex gap-2">
@@ -109,6 +106,45 @@
                     <input type="button" value="Cancel" class="btn btn-secondary w-50" onclick="location.href='@Url.Action("Index")';" />
                 </div>
             </form>
+
+            <div id="exerciseModal" class="modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Select Exercise</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <div class="modal-body overflow-auto" id="exerciseList">
+                            <select class="form-control mb-3" id="muscleGroupSelectList">
+                                <option value="all">All Muscles</option>
+                                @foreach (var muscleGroup in Model.MuscleGroups)
+                                {
+                                    <option value="@muscleGroup.Id">@muscleGroup.Name</option>
+                                }
+                            </select>
+
+                            <div class="input-group rounded-3 mb-3">
+                                <span class="input-group-text bi bi-search border-0 text-secondary pe-1" style="background-color: #e2e5e9;"></span>
+                                <input class="form-control mr-sm-2 border-0 shadow-none" type="search" placeholder="Search Exercises" aria-label="Search" id="searchInput" style="background-color: #e2e5e9;">
+                            </div>
+
+                            @foreach (var exercise in Model.AllExercises)
+                            {
+                                <div id="@exercise.Id" data-exercise-name="@exercise.Name" data-mg-id="@exercise.MuscleGroup.Id" class="position-relative p-2 rounded-3 exercise-selection-div">
+                                    <a class="stretched-link" data-bs-dismiss="modal"></a>
+                                    <p class="m-0">@exercise.Name</p>
+                                    <p class="text-secondary pb-0 mb-1">@exercise.MuscleGroup.Name</p>
+                                </div>
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -116,10 +152,77 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="~/js/workoutForm.js"></script>
+    <script src="~/js/exerciseFilter.js"></script>
     <script>
         window.addEventListener("load", (e) => {
            //ensures each exercise div and set have correct name attributes on page load
            renumberExerciseIndex()
+        });
+
+        let exerciseIndex = @Model.Exercises.Count;
+        const exerciseContainer = document.getElementById("exerciseContainer");
+        const muscleGroupSelectList = document.getElementById("muscleGroupSelectList");
+        const searchInput = document.getElementById("searchInput");
+        const exerciseList = document.getElementById("exerciseList");
+
+        searchInput.addEventListener("input", filterExercises)
+        muscleGroupSelectList.addEventListener("change", filterExercises);
+
+        function createExerciseDiv(container, id, name) {
+            const newExerciseDiv = document.createElement("div");
+            newExerciseDiv.id = `exercise.${exerciseIndex}`;
+            newExerciseDiv.classList.add("exerciseDiv", "p-3", "mb-4", "card", "border-light-subtle");
+            newExerciseDiv.innerHTML = `
+                        <div class="form-group">
+                            <div class="d-flex gap-2 mb-3 align-items-center">
+                                <select name="Exercises[${exerciseIndex}].ExerciseId" class="form-control">
+                                    <option readonly value="${id}">${name}</option>
+                                </select>
+                                <button type="button" class="btn-close removeExerciseBtn"></button>
+                            </div>
+                        </div>
+
+                        <div class="form-group setDiv">
+                            <div class="row mb-1 text-secondary"  style="font-size: 0.75rem;">
+                                <label class="col-2 control-label small text-center">SET</label>
+                                <label class="col-4 control-label small text-center">LBS</label>
+                                <label class="col-4 control-label small text-center">REPS</label>
+                                <div class="col-2"></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn  btn-secondary w-100 addSetBtn">+ Add Set</button>
+                    `;
+            container.appendChild(newExerciseDiv);
+
+            createSetDiv(newExerciseDiv, exerciseIndex);
+            exerciseIndex++;
+        }
+
+        exerciseList.addEventListener("click", (e) => {
+            if (e.target.closest(".exercise-selection-div")) {
+                const selectedExerciseDiv = e.target.closest(".exercise-selection-div");
+
+                const id = selectedExerciseDiv.id;
+                const name = selectedExerciseDiv.dataset.exerciseName;
+                createExerciseDiv(exerciseContainer, id, name);
+            }
+        });
+
+        exerciseContainer.addEventListener("click", (e) => {
+            if (e.target.closest(".removeSetBtn")) {
+                const setRow = e.target.closest(".setRow");
+                const setContainer = setRow.parentElement;
+                setContainer.removeChild(setRow);
+                renumberSets();
+            } if (e.target.closest(".addSetBtn")) {
+                const exerciseDiv = e.target.closest(".exerciseDiv");
+                const exIndex = parseInt(exerciseDiv.id.split(".")[1]);
+                createSetDiv(exerciseDiv, exIndex);
+            } if (e.target.closest(".removeExerciseBtn")) {
+                const exerciseDiv = e.target.closest(".exerciseDiv");
+                exerciseContainer.removeChild(exerciseDiv);
+                renumberExerciseIndex();
+            }
         });
 
     </script>
