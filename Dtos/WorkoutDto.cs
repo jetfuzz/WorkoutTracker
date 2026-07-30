@@ -17,6 +17,7 @@
 
     public class SetDto
     {
+        public int Id { get; set; }
         public int SetNumber { get; set; }
         public int Repetitions { get; set; }
         public double Weight { get; set; }

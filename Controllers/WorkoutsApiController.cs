@@ -31,6 +31,7 @@ public class WorkoutsApiController : ControllerBase
                     ExerciseName = we.Exercise.Name,
                     Sets = we.Sets.Select(s => new SetDto
                     {
+                        Id = s.Id,
                         SetNumber = s.SetNumber,
                         Repetitions = s.Repetitions,
                         Weight = s.Weight
@@ -59,6 +60,7 @@ public class WorkoutsApiController : ControllerBase
                     ExerciseName = we.Exercise.Name,
                     Sets = we.Sets.Select(s => new SetDto
                     {
+                        Id = s.Id,
                         SetNumber = s.SetNumber,
                         Repetitions = s.Repetitions,
                         Weight = s.Weight
@@ -78,30 +80,36 @@ public class WorkoutsApiController : ControllerBase
     // PUT: api/Workout/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutWorkout(int? id, Workout workout)
+    public async Task<IActionResult> PutWorkout(int? id, WorkoutWriteDto dto)
     {
-        if (id != workout.Id)
+        var workout = await _context.Workouts
+            .Include(w => w.WorkoutExercises)
+                .ThenInclude(we => we.Sets)
+            .FirstOrDefaultAsync(w => w.Id == id);
+
+        if (workout == null) return NotFound();
+
+        workout.Name = dto.Name;
+        workout.Date = dto.Date;
+
+        _context.WorkoutExercises.RemoveRange(workout.WorkoutExercises);
+
+        foreach (var exerciseDto in dto.Exercises)
         {
-            return BadRequest();
+            var workoutExercise = new WorkoutExercise
+            {
+                ExerciseId = exerciseDto.ExerciseId,
+                Sets = exerciseDto.Sets.Select(s => new Set
+                {
+                    SetNumber = s.SetNumber,
+                    Repetitions = s.Repetitions,
+                    Weight = s.Weight
+                }).ToList()
+            };
+            workout.WorkoutExercises.Add(workoutExercise);
         }
 
-        _context.Entry(workout).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!WorkoutExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }

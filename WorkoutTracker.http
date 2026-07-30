@@ -4,7 +4,27 @@ GET {{WorkoutTracker_HostAddress}}/api/workoutsapi
 
 ###
 
-@id=52
+@id=56
 GET {{WorkoutTracker_HostAddress}}/api/workoutsapi/{{id}}
+
+###
+
+PUT {{WorkoutTracker_HostAddress}}/api/workoutsapi/{{id}}
+Content-Type: application/json
+
+{
+  "name": "Leg Day (Edited)",
+  "date": "2026-07-04T00:00:00",
+  "exercises": [
+    {
+      "exerciseId": 2,
+      "sets": [
+        { "setNumber": 1, "repetitions": 1, "weight": 235 },
+        { "setNumber": 2, "repetitions": 1, "weight": 235 },
+        { "setNumber": 3, "repetitions": 1, "weight": 235 }
+      ]
+    }
+  ]
+}
 
 ###
