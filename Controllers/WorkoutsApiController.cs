@@ -117,12 +117,51 @@ public class WorkoutsApiController : ControllerBase
     // POST: api/Workout
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Workout>> PostWorkout(Workout workout)
+    public async Task<ActionResult<Workout>> PostWorkout(WorkoutWriteDto dto)
     {
+        var workout = new Workout
+        {
+            Name = dto.Name,
+            Date = dto.Date,
+            WorkoutExercises = dto.Exercises.Select(e => new WorkoutExercise
+            {
+                ExerciseId = e.ExerciseId,
+                Sets = e.Sets.Select(s => new Set
+                {
+                    SetNumber = s.SetNumber,
+                    Repetitions = s.Repetitions,
+                    Weight = s.Weight
+                }).ToList()
+            }).ToList()
+        };
+
         _context.Workouts.Add(workout);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetWorkout", new { id = workout.Id }, workout);
+        var createdWorkout = await _context.Workouts
+            .Where(w => w.Id == workout.Id)
+            .Select(w => new WorkoutDto
+            {
+                Id = w.Id,
+                //UserId = w.UserId,
+                Date = w.Date,
+                Name = w.Name,
+                Exercises = w.WorkoutExercises.Select(we => new WorkoutExerciseDto
+                {
+                    Id = we.Id,
+                    ExerciseName = we.Exercise.Name,
+                    Sets = we.Sets.Select(s => new SetDto
+                    {
+                        Id = s.Id,
+                        SetNumber = s.SetNumber,
+                        Repetitions = s.Repetitions,
+                        Weight = s.Weight
+                    }).ToList()
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        return CreatedAtAction("GetWorkout", new { id = createdWorkout.Id }, createdWorkout);
     }
 
     // DELETE: api/Workout/5
@@ -139,10 +178,5 @@ public class WorkoutsApiController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
-    }
-
-    private bool WorkoutExists(int? id)
-    {
-        return _context.Workouts.Any(e => e.Id == id);
     }
 }
