@@ -1,0 +1,10 @@
+﻿@WorkoutTracker_HostAddress = https://localhost:7295
+
+GET {{WorkoutTracker_HostAddress}}/api/workoutsapi
+
+###
+
+@id=52
+GET {{WorkoutTracker_HostAddress}}/api/workoutsapi/{{id}}
+
+###
