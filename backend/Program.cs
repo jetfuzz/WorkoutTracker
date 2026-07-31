@@ -6,14 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WorkoutTrackerContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WorkoutTrackerContext") ?? throw new InvalidOperationException("Connection string 'WorkoutTrackerContext' not found.")));
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContext")));
-
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>();
+.AddEntityFrameworkStores<WorkoutTrackerContext>();
 
 //builder.Services.AddAuthentication(options =>
 //{

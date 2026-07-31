@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Models;
 
 namespace WorkoutTracker.Data
 {
-    public class WorkoutTrackerContext : DbContext
+    public class WorkoutTrackerContext : IdentityDbContext
     {
         public WorkoutTrackerContext(DbContextOptions<WorkoutTrackerContext> options)
             : base(options)
@@ -12,6 +13,7 @@ namespace WorkoutTracker.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             //many to many relationship between Workout and Exercise through WorkoutExercise
             modelBuilder.Entity<WorkoutExercise>()
                 .HasOne(we => we.Workout)
