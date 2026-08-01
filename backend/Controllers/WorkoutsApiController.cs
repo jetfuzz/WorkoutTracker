@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Models;
 using WorkoutTracker.Data;
 using WorkoutTracker.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(AuthenticationSchemes = "Bearer")]
 public class WorkoutsApiController : ControllerBase
 {
     private readonly WorkoutTrackerContext _context;
@@ -18,11 +20,12 @@ public class WorkoutsApiController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<WorkoutDto>>> GetWorkout()
     {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var workouts = await _context.Workouts
+            .Where(w => w.UserId == userId)
             .Select(w => new WorkoutDto 
             {
                 Id = w.Id,
-                //UserId = w.UserId,
                 Date = w.Date,
                 Name = w.Name,
                 Exercises = w.WorkoutExercises.Select(we => new WorkoutExerciseDto
@@ -46,12 +49,12 @@ public class WorkoutsApiController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<WorkoutDto>> GetWorkout(int id)
     {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var workout = await _context.Workouts
-            .Where(w => w.Id == id)
+            .Where(w => w.Id == id && w.UserId == userId)
             .Select(w => new WorkoutDto
             {
                 Id = w.Id,
-                //UserId = w.UserId,
                 Date = w.Date,
                 Name = w.Name,
                 Exercises = w.WorkoutExercises.Select(we => new WorkoutExerciseDto
@@ -80,12 +83,13 @@ public class WorkoutsApiController : ControllerBase
     // PUT: api/Workout/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutWorkout(int? id, WorkoutWriteDto dto)
+    public async Task<IActionResult> PutWorkout(int id, WorkoutWriteDto dto)
     {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var workout = await _context.Workouts
             .Include(w => w.WorkoutExercises)
                 .ThenInclude(we => we.Sets)
-            .FirstOrDefaultAsync(w => w.Id == id);
+            .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
 
         if (workout == null) return NotFound();
 
@@ -119,8 +123,10 @@ public class WorkoutsApiController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Workout>> PostWorkout(WorkoutWriteDto dto)
     {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var workout = new Workout
         {
+            UserId = userId,
             Name = dto.Name,
             Date = dto.Date,
             WorkoutExercises = dto.Exercises.Select(e => new WorkoutExercise
@@ -139,11 +145,10 @@ public class WorkoutsApiController : ControllerBase
         await _context.SaveChangesAsync();
 
         var createdWorkout = await _context.Workouts
-            .Where(w => w.Id == workout.Id)
+            .Where(w => w.Id == workout.Id && w.UserId == userId)
             .Select(w => new WorkoutDto
             {
                 Id = w.Id,
-                //UserId = w.UserId,
                 Date = w.Date,
                 Name = w.Name,
                 Exercises = w.WorkoutExercises.Select(we => new WorkoutExerciseDto
@@ -168,7 +173,10 @@ public class WorkoutsApiController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteWorkout(int? id)
     {
-        var workout = await _context.Workouts.FindAsync(id);
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var workout = await _context.Workouts
+            .Where(w => w.Id == id && w.UserId == userId)
+            .FirstOrDefaultAsync();
         if (workout == null)
         {
             return NotFound();
