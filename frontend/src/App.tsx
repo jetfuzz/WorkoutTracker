@@ -1,9 +1,5 @@
 function App() {
-  return (
-    <>
-      <h1>Workout Tracker</h1>
-    </>
-  );
+  return <></>;
 }
 
 export default App;
