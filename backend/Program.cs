@@ -10,6 +10,13 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 .AddEntityFrameworkStores<WorkoutTrackerContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddCors(options => options.AddPolicy("AllowReact", policy =>
+{
+    policy.WithOrigins("http://localhost:5173") 
+          .AllowAnyHeader()
+          .AllowAnyMethod();
+}));
+
 builder.Services.AddAuthentication()
     .AddJwtBearer(options =>
     {
@@ -44,6 +51,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseCors("AllowReact");
 app.UseAuthentication();
 app.UseAuthorization();
 
